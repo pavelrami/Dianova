@@ -1,0 +1,78 @@
+# =====================================================================
+# Dianova API · plantilla de configuración
+# Copia este archivo como application.properties (misma carpeta) y llena
+# los valores. application.properties NUNCA se sube al repositorio.
+# En el VPS se recomienda dejarlo en /etc/dianova/application.properties
+# (ver deploy/dianova-api.service).
+# =====================================================================
+
+spring.application.name=dianova-api
+server.port=8080
+# Detrás de Nginx: respeta X-Forwarded-For / X-Forwarded-Proto
+server.forward-headers-strategy=framework
+
+# Perfil "demo" = carga datos de prueba (DemoDataSeeder) si la BD está vacía
+spring.profiles.active=demo
+
+# ---------- Base de datos MySQL 8 (no MariaDB) ----------
+spring.datasource.url=jdbc:mysql://localhost:3306/dianova?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Mexico_City&characterEncoding=UTF-8
+spring.datasource.username=CAMBIA_USUARIO_BD
+spring.datasource.password=CAMBIA_PASSWORD_BD
+
+# ---------- JPA: el esquema lo crea Flyway; Hibernate solo lo valida ----------
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.open-in-view=false
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.default_batch_fetch_size=50
+spring.jpa.properties.hibernate.jdbc.batch_size=50
+spring.jpa.properties.hibernate.order_inserts=true
+
+# ---------- Flyway ----------
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+
+# ---------- Correo: Postfix local del VPS (sin servicios de terceros) ----------
+spring.mail.host=localhost
+spring.mail.port=25
+spring.mail.properties.mail.smtp.auth=false
+spring.mail.properties.mail.smtp.starttls.enable=false
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
+
+# ---------- Dianova ----------
+dianova.zona-horaria=America/Mexico_City
+# URL pública del frontend (enlaces en correos y recuperación de contraseña)
+dianova.frontend-url=https://TU-DOMINIO
+# Orígenes permitidos por CORS (separados por coma)
+dianova.cors-origenes=https://TU-DOMINIO,http://localhost:5173
+
+# JWT: clave HMAC en Base64 de 32 bytes o más. Genera una con:  openssl rand -base64 48
+dianova.jwt.secreto=CAMBIA_POR_UNA_CLAVE_BASE64_DE_48_BYTES
+dianova.jwt.minutos-expiracion=480
+dianova.jwt.emisor=dianova-api
+
+# Despachador de recordatorios
+dianova.notificaciones.intervalo-ms=30000
+dianova.notificaciones.max-intentos=3
+dianova.notificaciones.minutos-reintento=5
+# Los correos de datos de demostración usan el dominio reservado .test y nunca se envían
+dianova.notificaciones.dominios-demo=dianova.test
+
+dianova.notificaciones.correo.habilitado=true
+dianova.notificaciones.correo.remitente=no-responder@TU-DOMINIO
+dianova.notificaciones.correo.nombre-remitente=Dianova
+
+# Twilio (SMS y WhatsApp). Consola: https://console.twilio.com
+dianova.notificaciones.twilio.habilitado=true
+dianova.notificaciones.twilio.account-sid=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+dianova.notificaciones.twilio.auth-token=CAMBIA_AUTH_TOKEN
+# Número Twilio con capacidad SMS, formato E.164
+dianova.notificaciones.twilio.numero-sms=+1XXXXXXXXXX
+# Remitente de WhatsApp (sandbox: whatsapp:+14155238886)
+dianova.notificaciones.twilio.numero-whatsapp=whatsapp:+14155238886
+dianova.notificaciones.twilio.url-api=https://api.twilio.com
+
+# Actuator: solo salud
+management.endpoints.web.exposure.include=health
+management.endpoint.health.show-details=never
