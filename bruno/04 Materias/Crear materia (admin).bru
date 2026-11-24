@@ -1,0 +1,40 @@
+meta {
+  name: Crear materia (admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/materias
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "periodoId": 2,
+    "docenteId": 2,
+    "codigoGrupo": "BRU-{{$randomInt}}",
+    "nombre": "Materia de prueba Bruno",
+    "creditos": 4,
+    "color": "#C99A4B",
+    "aula": "Aula 1",
+    "descripcion": "Creada desde Bruno"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("materiaId", res.body.id);
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

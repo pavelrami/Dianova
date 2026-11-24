@@ -1,0 +1,21 @@
+meta {
+  name: Cancelar recordatorio
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/recordatorios/{{recordatorioId}}/cancelar
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

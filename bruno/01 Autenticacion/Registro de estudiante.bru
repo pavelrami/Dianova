@@ -1,0 +1,31 @@
+meta {
+  name: Registro de estudiante
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/auth/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Prueba",
+    "apellidos": "Bruno",
+    "correo": "bruno.{{$timestamp}}@dianova.test",
+    "contrasena": "Segura#2026",
+    "telefono": "",
+    "carrera": "Ingeniería"
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+  test("crea cuenta de estudiante", function() {
+    expect(res.body.usuario.rol).to.equal("ESTUDIANTE");
+  });
+}

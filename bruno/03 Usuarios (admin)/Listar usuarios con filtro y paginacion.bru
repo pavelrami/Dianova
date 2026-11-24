@@ -1,0 +1,26 @@
+meta {
+  name: Listar usuarios con filtro y paginacion
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios?q=ma&rol=ESTUDIANTE&activo=true&page=0&size=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("paginación del servidor", function() {
+    expect(res.body.tamano).to.equal(5);
+    expect(res.body.contenido.length).to.be.at.most(5);
+    res.body.contenido.forEach(u => expect(u.rol).to.equal("ESTUDIANTE"));
+  });
+}

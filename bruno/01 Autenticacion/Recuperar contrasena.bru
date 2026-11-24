@@ -1,0 +1,23 @@
+meta {
+  name: Recuperar contrasena
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/auth/recuperar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "estudiante@dianova.test"
+  }
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

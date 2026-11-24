@@ -1,0 +1,27 @@
+meta {
+  name: Confirmar asistencia (estudiante)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/eventos/{{eventoId}}/respuesta
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+body:json {
+  {
+    "respuesta": "CONFIRMADA"
+  }
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

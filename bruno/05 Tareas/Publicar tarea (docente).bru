@@ -1,0 +1,46 @@
+meta {
+  name: Publicar tarea (docente)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/tareas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+body:json {
+  {
+    "titulo": "Tarea de prueba Bruno",
+    "descripcion": "Publicada desde Bruno",
+    "fechaEntrega": "2030-01-15T23:59:00",
+    "prioridad": "ALTA",
+    "materiaId": 1,
+    "publicar": true
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("tareaId", res.body.id);
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+  test("queda publicada con seguimientos", function() {
+    expect(res.body.estadoPublicacion).to.equal("PUBLICADA");
+    expect(res.body.avance.total).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  Crea un seguimiento por cada inscrito y programa los avisos (correo, SMS, WhatsApp) según el consentimiento de cada estudiante.
+}

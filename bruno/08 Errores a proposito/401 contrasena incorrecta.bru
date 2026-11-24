@@ -1,0 +1,28 @@
+meta {
+  name: 401 contrasena incorrecta
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "admin@dianova.test",
+    "contrasena": "Incorrecta#1"
+  }
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.status).to.equal(401);
+  });
+  test("error en formato JSON", function() {
+    expect(res.body.estado).to.equal(401);
+    expect(res.body.mensaje).to.be.a("string");
+  });
+}

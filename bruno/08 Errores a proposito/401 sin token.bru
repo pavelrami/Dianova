@@ -1,0 +1,21 @@
+meta {
+  name: 401 sin token
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/tareas
+  body: none
+  auth: none
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.status).to.equal(401);
+  });
+  test("error en formato JSON", function() {
+    expect(res.body.estado).to.equal(401);
+    expect(res.body.mensaje).to.be.a("string");
+  });
+}

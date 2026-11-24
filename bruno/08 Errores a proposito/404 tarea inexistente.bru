@@ -1,0 +1,25 @@
+meta {
+  name: 404 tarea inexistente
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/tareas/999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+tests {
+  test("responde 404", function() {
+    expect(res.status).to.equal(404);
+  });
+  test("error en formato JSON", function() {
+    expect(res.body.estado).to.equal(404);
+    expect(res.body.mensaje).to.be.a("string");
+  });
+}

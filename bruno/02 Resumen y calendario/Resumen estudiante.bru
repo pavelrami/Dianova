@@ -1,0 +1,24 @@
+meta {
+  name: Resumen estudiante
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/resumen
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("trae métricas", function() {
+    expect(res.body.metricas.length).to.be.greaterThan(0);
+  });
+}

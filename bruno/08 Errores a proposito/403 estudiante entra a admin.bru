@@ -1,0 +1,25 @@
+meta {
+  name: 403 estudiante entra a admin
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/admin/usuarios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+tests {
+  test("responde 403", function() {
+    expect(res.status).to.equal(403);
+  });
+  test("error en formato JSON", function() {
+    expect(res.body.estado).to.equal(403);
+    expect(res.body.mensaje).to.be.a("string");
+  });
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Crear docente
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/admin/usuarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombre": "Laura",
+    "apellidos": "Prueba Bruno",
+    "correo": "laura.{{$timestamp}}@dianova.test",
+    "contrasena": "Docente#2026",
+    "rol": "DOCENTE",
+    "telefono": "",
+    "carrera": "",
+    "activo": true
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("usuarioId", res.body.id);
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

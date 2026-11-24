@@ -1,0 +1,11 @@
+docs {
+  # Dianova API · colección de pruebas
+
+  1. Elige el entorno **Local** (http://localhost:8080/api) o **VPS**.
+  2. Ejecuta primero la carpeta **01 Autenticacion**: cada login guarda su JWT
+     en una variable (tokenAdmin, tokenDocente, tokenEstudiante).
+  3. Las demás peticiones envían ese token en `Authorization: Bearer ...`.
+  4. La carpeta **08 Errores a proposito** comprueba 400, 401, 403, 404 y 422.
+
+  Desde la terminal: `npx @usebruno/cli run --env Local` dentro de esta carpeta.
+}

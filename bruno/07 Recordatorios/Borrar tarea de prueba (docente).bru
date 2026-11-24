@@ -1,0 +1,21 @@
+meta {
+  name: Borrar tarea de prueba (docente)
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/tareas/{{tareaId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+tests {
+  test("responde 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

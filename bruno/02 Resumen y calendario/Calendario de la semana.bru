@@ -1,0 +1,31 @@
+meta {
+  name: Calendario de la semana
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/calendario?desde={{hoy}}&hasta={{enSieteDias}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+script:pre-request {
+  const d = new Date();
+  const iso = (x) => x.toISOString().slice(0, 10);
+  bru.setVar("hoy", iso(d));
+  bru.setVar("enSieteDias", iso(new Date(d.getTime() + 7 * 86400000)));
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("es una lista", function() {
+    expect(res.body).to.be.an("array");
+  });
+}

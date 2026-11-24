@@ -1,0 +1,24 @@
+meta {
+  name: Mi usuario (token en header)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/auth/yo
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenEstudiante}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("es la estudiante de prueba", function() {
+    expect(res.body.rol).to.equal("ESTUDIANTE");
+  });
+}

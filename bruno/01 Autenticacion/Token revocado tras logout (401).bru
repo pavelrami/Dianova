@@ -1,0 +1,21 @@
+meta {
+  name: Token revocado tras logout (401)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/tareas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+tests {
+  test("responde 401", function() {
+    expect(res.status).to.equal(401);
+  });
+}

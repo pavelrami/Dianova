@@ -1,0 +1,24 @@
+meta {
+  name: Catalogo de roles
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/admin/roles
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("tres roles", function() {
+    expect(res.body.length).to.equal(3);
+  });
+}

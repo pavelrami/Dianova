@@ -1,0 +1,27 @@
+meta {
+  name: Inscribir estudiante (N-M)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/materias/{{materiaId}}/inscripciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "estudianteId": 7
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

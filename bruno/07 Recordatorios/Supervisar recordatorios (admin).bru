@@ -1,0 +1,21 @@
+meta {
+  name: Supervisar recordatorios (admin)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/admin/recordatorios?estado=FALLIDO&page=0&size=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Desactivar usuario
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/admin/usuarios/{{usuarioId}}/estado
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "activo": false
+  }
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("queda inactivo", function() {
+    expect(res.body.activo).to.equal(false);
+  });
+}

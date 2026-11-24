@@ -1,0 +1,25 @@
+meta {
+  name: Logout e invalidacion del token
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Revoca el JWT del docente en sesiones_jwt. La siguiente petición con ese token debe dar 401.
+}

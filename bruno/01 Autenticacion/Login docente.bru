@@ -1,0 +1,35 @@
+meta {
+  name: Login docente
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "docente@dianova.test",
+    "contrasena": "Docente#2026"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setEnvVar("tokenDocente", res.body.token);
+  }
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("devuelve un JWT y el rol correcto", function() {
+    expect(res.body.token).to.be.a("string");
+    expect(res.body.tipo).to.equal("Bearer");
+    expect(res.body.usuario.correo).to.equal("docente@dianova.test");
+  });
+}

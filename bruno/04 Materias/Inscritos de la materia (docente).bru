@@ -1,0 +1,21 @@
+meta {
+  name: Inscritos de la materia (docente)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/materias/{{materiaId}}/inscripciones?page=0&size=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+tests {
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

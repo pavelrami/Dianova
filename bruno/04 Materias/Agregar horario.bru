@@ -1,0 +1,30 @@
+meta {
+  name: Agregar horario
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/materias/{{materiaId}}/horarios
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "diaSemana": 2,
+    "horaInicio": "10:00",
+    "horaFin": "11:30",
+    "aula": "Aula 1"
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

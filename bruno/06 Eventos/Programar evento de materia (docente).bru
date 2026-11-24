@@ -1,0 +1,39 @@
+meta {
+  name: Programar evento de materia (docente)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/eventos
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenDocente}}
+}
+
+body:json {
+  {
+    "titulo": "Asesoría Bruno",
+    "descripcion": "Dudas del parcial",
+    "ubicacion": "Cubículo 2",
+    "inicio": "2030-01-12T10:00:00",
+    "fin": "2030-01-12T11:00:00",
+    "tipo": "ASESORIA",
+    "materiaId": 1
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("eventoId", res.body.id);
+  }
+}
+
+tests {
+  test("responde 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}
