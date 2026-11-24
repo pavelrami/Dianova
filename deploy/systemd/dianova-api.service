@@ -1,0 +1,25 @@
+# /etc/systemd/system/dianova-api.service
+# Mantiene la API corriendo como servicio: arranca con el servidor y se reinicia si falla.
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now dianova-api
+#   sudo journalctl -u dianova-api -f     (ver logs)
+
+[Unit]
+Description=Dianova API (Spring Boot)
+After=network.target mysql.service postfix.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=dianova
+Group=dianova
+WorkingDirectory=/opt/dianova
+# La configuración con secretos vive fuera del repositorio, en /etc/dianova/application.properties (permisos 640)
+ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar /opt/dianova/dianova-api.jar --spring.config.additional-location=file:/etc/dianova/
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+Environment=TZ=America/Mexico_City
+
+[Install]
+WantedBy=multi-user.target
