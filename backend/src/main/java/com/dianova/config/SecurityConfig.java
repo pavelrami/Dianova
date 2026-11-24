@@ -56,7 +56,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/periodos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/periodos/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().denyAll())
+                        // Fuera de /api solo hay archivos estáticos del frontend (si se sirven desde aquí)
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
