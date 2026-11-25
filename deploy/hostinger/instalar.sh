@@ -2,7 +2,9 @@
 # =====================================================================
 # Instala Dianova en un VPS Ubuntu (Hostinger) que ya aloja otros sitios.
 # Ejecútalo como root dentro de la carpeta del paquete (dianova-paquete/):
-#   bash instalar.sh TU-DOMINIO
+#   bash instalar.sh TU-DOMINIO [OTROS-NOMBRES...]
+#   ej.: bash instalar.sh dianovaa.com www.dianovaa.com
+# El primer nombre es el principal (enlaces de correo, CORS); los demás son alias.
 #
 # Qué hace:
 #   1. Instala MySQL 8 (Oracle MySQL de los repositorios de Ubuntu, no MariaDB),
@@ -21,15 +23,33 @@
 # =====================================================================
 set -euo pipefail
 
-DOMINIO="${1:-}"
-if [[ -z "$DOMINIO" ]]; then
-  echo "Uso: bash instalar.sh TU-DOMINIO" >&2
+if [[ $# -lt 1 || -z "$1" ]]; then
+  echo "Uso: bash instalar.sh TU-DOMINIO [OTROS-NOMBRES...]" >&2
   exit 1
 fi
 if [[ $EUID -ne 0 ]]; then
   echo "Ejecuta este script como root." >&2
   exit 1
 fi
+# Dominios con ñ o acentos (por ejemplo dianova.nexoñuu.tech) se convierten a punycode
+# (dianova.xn--nexouu-zwa.tech), que es lo que entienden Nginx y Certbot.
+normalizar() {
+  local d="$1"
+  if LC_ALL=C grep -q '[^ -~]' <<<"$d"; then
+    d="$(python3 -c 'import sys; print(sys.argv[1].encode("idna").decode())' "$d")"
+  fi
+  echo "${d,,}"
+}
+NOMBRES=()
+for n in "$@"; do
+  [[ -n "$n" ]] && NOMBRES+=("$(normalizar "$n")")
+done
+DOMINIO="${NOMBRES[0]}"
+SERVER_NAMES="${NOMBRES[*]}"
+CORS_ORIGENES="$(printf 'https://%s,' "${NOMBRES[@]}")"
+CORS_ORIGENES="${CORS_ORIGENES%,}"
+ARGS_CERTBOT="$(printf -- '-d %s ' "${NOMBRES[@]}")"
+echo "Nombres del sitio: $SERVER_NAMES"
 
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 if [[ ! -f "$AQUI/dianova-api.jar" || ! -f "$AQUI/web/index.html" ]]; then
@@ -57,25 +77,38 @@ if dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null | grep -q 'install ok
   echo "MariaDB está instalado y el proyecto exige MySQL. No se continúa." >&2
   exit 1
 fi
+EN_USO="$(ss -ltn | awk 'NR>1 {print $4}')"
+puerto_ocupado() { grep -qE "[:.]$1\$" <<<"$EN_USO"; }
 if ! command -v nginx >/dev/null; then
+  if puerto_ocupado 80 || puerto_ocupado 443; then
+    echo "Los puertos 80/443 están ocupados pero Nginx no está instalado en el sistema" >&2
+    echo "(¿el otro proyecto usa Docker u otro servidor web?). No se continúa: revisa diagnostico.sh." >&2
+    exit 1
+  fi
   echo "Nginx no está instalado; se instalará."
+fi
+if ! dpkg-query -W -f='${Status}' mysql-server 2>/dev/null | grep -q 'install ok installed' && puerto_ocupado 3306; then
+  echo "El puerto 3306 ya está ocupado por otro servicio (¿MySQL en Docker?). No se continúa: revisa diagnostico.sh." >&2
+  exit 1
 fi
 
 IP_LOCAL="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' || true)"
-IP_DOMINIO="$(getent ahostsv4 "$DOMINIO" 2>/dev/null | awk 'NR==1 {print $1}' || true)"
-echo "IP del VPS: ${IP_LOCAL:-?}   ·   $DOMINIO apunta a: ${IP_DOMINIO:-(no resuelve todavía)}"
-if [[ -n "$IP_LOCAL" && "$IP_DOMINIO" != "$IP_LOCAL" ]]; then
-  echo "AVISO: el dominio aún no apunta a este VPS. La instalación sigue, pero Certbot fallará hasta que el DNS esté listo."
-fi
+echo "IP del VPS: ${IP_LOCAL:-?}"
+for n in "${NOMBRES[@]}"; do
+  IP_NOMBRE="$(getent ahostsv4 "$n" 2>/dev/null | awk 'NR==1 {print $1}' || true)"
+  echo "  $n apunta a: ${IP_NOMBRE:-(no resuelve todavía)}"
+  if [[ -n "$IP_LOCAL" && "$IP_NOMBRE" != "$IP_LOCAL" ]]; then
+    echo "  AVISO: $n aún no apunta a este VPS. La instalación sigue, pero Certbot fallará hasta que el DNS esté listo."
+  fi
+done
 
 # Puerto interno del JAR: se conserva el de una instalación previa o se busca uno libre
 if [[ -f "$CONF" ]] && grep -q '^server.port=' "$CONF"; then
   PUERTO="$(grep '^server.port=' "$CONF" | cut -d= -f2 | tr -d '[:space:]')"
 else
   PUERTO=""
-  EN_USO="$(ss -ltn | awk 'NR>1 {print $4}')"
   for p in 8090 8091 8092 8093 8094 8095 8096 8097 8098 8099; do
-    if ! grep -qE "[:.]$p\$" <<<"$EN_USO"; then
+    if ! puerto_ocupado "$p"; then
       PUERTO="$p"
       break
     fi
@@ -174,7 +207,7 @@ spring.mail.properties.mail.smtp.writetimeout=5000
 
 dianova.zona-horaria=America/Mexico_City
 dianova.frontend-url=https://${DOMINIO}
-dianova.cors-origenes=https://${DOMINIO}
+dianova.cors-origenes=${CORS_ORIGENES}
 dianova.web.directorio=
 
 dianova.jwt.secreto=${JWT_SECRETO}
@@ -244,7 +277,7 @@ chown -R root:root "$WEB_DIR"
 chmod -R a+rX "$WEB_DIR"
 
 # ---------------------------------------------------------------------
-paso "Agregando el sitio de Nginx para $DOMINIO"
+paso "Agregando el sitio de Nginx para $SERVER_NAMES"
 if [[ -d /etc/nginx/sites-available && -d /etc/nginx/sites-enabled ]]; then
   SITIO=/etc/nginx/sites-available/dianova.conf
   ENLACE=/etc/nginx/sites-enabled/dianova.conf
@@ -258,7 +291,8 @@ if [[ -f "$SITIO" ]] && grep -q "managed by Certbot" "$SITIO"; then
 else
   RESPALDO_SITIO=""
   [[ -f "$SITIO" ]] && RESPALDO_SITIO="$(mktemp)" && cp "$SITIO" "$RESPALDO_SITIO"
-  sed -e "s/__DOMINIO__/$DOMINIO/g" -e "s/__PUERTO__/$PUERTO/g" "$AQUI/nginx-dianova.conf" > "$SITIO"
+  sed -e "s/__SERVER_NAMES__/$SERVER_NAMES/g" -e "s/__CERTBOT__/$ARGS_CERTBOT/g" \
+      -e "s/__PUERTO__/$PUERTO/g" "$AQUI/nginx-dianova.conf" > "$SITIO"
   [[ -n "$ENLACE" ]] && ln -sf "$SITIO" "$ENLACE"
   if ! nginx -t; then
     echo "La configuración de Nginx no es válida; se revierte el sitio de Dianova." >&2
@@ -293,7 +327,7 @@ Dianova quedó instalada en HTTP.
 Último paso, HTTPS con Let's Encrypt (te pedirá tu correo y aceptar los
 términos de Let's Encrypt; elige redirigir HTTP a HTTPS si lo pregunta):
 
-  certbot --nginx -d $DOMINIO
+  certbot --nginx $ARGS_CERTBOT
 
 Logs de la API:  journalctl -u dianova-api -f
 =====================================================================

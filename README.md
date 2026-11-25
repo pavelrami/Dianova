@@ -14,8 +14,8 @@ Spring Boot · React · MySQL 8 · JWT · Correo con Postfix · SMS y WhatsApp c
 |---|---|
 | Integrantes | **[NOMBRE COMPLETO INTEGRANTE 1]** · **[NOMBRE COMPLETO INTEGRANTE 2]** |
 | Número de equipo | **[N.º DE EQUIPO]** |
-| Proyecto desplegado (HTTPS) | **[https://TU-DOMINIO](https://TU-DOMINIO)** |
-| URL base de la API | **`https://TU-DOMINIO/api`** (salud: `GET /api/salud`) |
+| Proyecto desplegado (HTTPS) | **[https://dianovaa.com](https://dianovaa.com)** |
+| URL base de la API | **`https://dianovaa.com/api`** (salud: [`GET /api/salud`](https://dianovaa.com/api/salud)) |
 | Repositorio | https://github.com/pavelrami/Dianova |
 | Tablero GitHub Projects | **https://github.com/users/pavelrami/projects/3** (columnas Backlog, To Do, In Progress, In Review, Done) |
 | Prototipo navegable en Figma | https://www.figma.com/design/Sz5DqCOxJm5mjzAloVFSTB/Login |
@@ -305,7 +305,7 @@ Cada envío queda registrado en `recordatorios` con su estado (`PENDIENTE → EN
 
 ## Despliegue en el VPS
 
-Todo corre en el VPS del equipo (Hostinger, Ubuntu): **MySQL 8**, la API como **JAR con systemd** (escuchando solo en `127.0.0.1`), el **build estático de React** en `/var/www/dianova` servido por **Nginx**, y **HTTPS con Let's Encrypt (Certbot)**. El VPS también aloja otro proyecto; Dianova usa su propio sitio de Nginx, su propio puerto interno y su propia base de datos, sin tocar lo demás.
+Todo corre en el VPS del equipo (Hostinger, Ubuntu 24.04) en **https://dianovaa.com**: **MySQL 8**, la API como **JAR con systemd** (escuchando solo en `127.0.0.1`), el **build estático de React** en `/var/www/dianova` servido por **Nginx**, y **HTTPS con Let's Encrypt (Certbot)**. El VPS también aloja otro proyecto; Dianova usa su propio sitio de Nginx, su propio puerto interno y su propia base de datos, sin tocar lo demás.
 
 ```powershell
 # En tu PC: compila y arma el paquete (JAR + build de React + scripts)
