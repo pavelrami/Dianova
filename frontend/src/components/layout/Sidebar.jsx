@@ -8,6 +8,9 @@ import Avatar from "../ui/Avatar";
 import { useAuth } from "../../auth/AuthContext";
 import { ROLES } from "../../utils/etiquetas";
 
+const TONO_SIDEBAR = "#633b1d";
+const TONO_CREMITA = "#faf6ee";
+
 const MENU = {
   ESTUDIANTE: [
     { a: "/app", texto: "Resumen", icono: Home, fin: true },
@@ -51,19 +54,34 @@ export default function Sidebar({ abiertoMovil, onCerrarMovil, colapsado, onCola
 
   return (
     <>
-      {abiertoMovil && <div className="fixed inset-0 z-40 bg-espresso/50 lg:hidden" onClick={onCerrarMovil} aria-hidden />}
+      {abiertoMovil && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={onCerrarMovil}
+          aria-hidden
+        />
+      )}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-espresso text-[#f6e9d3] transition-[width,transform] duration-300
+        style={{ backgroundColor: TONO_SIDEBAR, color: TONO_CREMITA }}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col rounded-sm transition-[width,transform] duration-300
         ${abiertoMovil ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
         w-[280px] ${colapsado ? "lg:w-[88px]" : "lg:w-[272px]"}`}
         aria-label="Menú principal"
       >
-        <div className="flex h-20 items-center justify-between px-6">
-          {colapsado ? <Simbolo className="mx-auto hidden size-9 lg:block" colorLibro="#FFE5A8" colorDestello="#FFE5A8" /> : null}
-          <span className={colapsado ? "lg:hidden" : ""}>
+        <div className="flex h-20 items-center justify-between px-6" style={{ color: TONO_CREMITA }}>
+          {colapsado ? (
+            <Simbolo className="mx-auto hidden size-9 lg:block" colorLibro={TONO_CREMITA} colorDestello={TONO_CREMITA} />
+          ) : null}
+          <span className={colapsado ? "lg:hidden" : ""} style={{ color: TONO_CREMITA }}>
             <Logo claro />
           </span>
-          <button type="button" onClick={onCerrarMovil} className="rounded-lg p-2 hover:bg-white/10 lg:hidden" aria-label="Cerrar menú">
+          <button
+            type="button"
+            onClick={onCerrarMovil}
+            className="rounded-sm p-2 hover:bg-white/10 lg:hidden"
+            style={{ color: TONO_CREMITA }}
+            aria-label="Cerrar menú"
+          >
             <X className="size-5" />
           </button>
         </div>
@@ -72,12 +90,17 @@ export default function Sidebar({ abiertoMovil, onCerrarMovil, colapsado, onCola
           <form onSubmit={buscar} className="px-5 pb-4" role="search">
             <label className="relative block">
               <span className="sr-only">Buscar tareas</span>
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#d9c3a3]" aria-hidden />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 opacity-80"
+                style={{ color: TONO_CREMITA }}
+                aria-hidden
+              />
               <input
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar tareas…"
-                className="h-11 w-full rounded-xl border border-white/15 bg-white/5 pl-9 pr-3 text-sm text-white placeholder:text-[#d9c3a3] outline-none focus:border-mantequilla/60"
+                style={{ color: TONO_CREMITA }}
+                className="h-11 w-full rounded-sm border border-white/20 bg-white/10 pl-9 pr-3 text-sm placeholder:text-[#faf6ee]/70 outline-none focus:border-[#faf6ee]"
               />
             </label>
           </form>
@@ -90,9 +113,14 @@ export default function Sidebar({ abiertoMovil, onCerrarMovil, colapsado, onCola
               to={a}
               end={fin}
               title={colapsado ? texto : undefined}
+              style={({ isActive }) =>
+                isActive
+                  ? { backgroundColor: TONO_CREMITA, color: TONO_SIDEBAR }
+                  : { color: TONO_CREMITA }
+              }
               className={({ isActive }) =>
-                `flex h-12 items-center gap-3 rounded-xl px-3.5 text-[15px] font-medium transition-colors ${
-                  isActive ? "bg-mantequilla text-espresso" : "text-[#f6e9d3] hover:bg-white/10"
+                `flex h-12 items-center gap-3 rounded-sm px-3.5 text-[15px] font-medium transition-colors ${
+                  isActive ? "" : "hover:bg-white/10"
                 } ${colapsado ? "lg:justify-center lg:px-0" : ""}`
               }
             >
@@ -105,7 +133,10 @@ export default function Sidebar({ abiertoMovil, onCerrarMovil, colapsado, onCola
         <button
           type="button"
           onClick={onColapsar}
-          className={`absolute -right-4 top-1/2 hidden size-8 place-items-center rounded-full border border-white/20 bg-espresso text-[#f6e9d3] shadow-lg hover:bg-[#5a3820] lg:grid ${colapsado ? "rotate-180" : ""}`}
+          style={{ backgroundColor: TONO_SIDEBAR, color: TONO_CREMITA }}
+          className={`absolute -right-4 top-1/2 hidden size-8 place-items-center rounded-sm border border-white/25 shadow-lg hover:brightness-110 lg:grid ${
+            colapsado ? "rotate-180" : ""
+          }`}
           aria-label={colapsado ? "Expandir menú" : "Contraer menú"}
         >
           <ChevronsLeft className="size-4" />
@@ -114,12 +145,17 @@ export default function Sidebar({ abiertoMovil, onCerrarMovil, colapsado, onCola
         {usuario && (
           <NavLink
             to="/app/perfil"
-            className={`m-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 hover:bg-white/10 ${colapsado ? "lg:justify-center lg:p-2" : ""}`}
+            style={{ color: TONO_CREMITA }}
+            className={`m-4 flex items-center gap-3 rounded-sm border border-white/15 bg-white/10 p-3 hover:bg-white/15 ${
+              colapsado ? "lg:justify-center lg:p-2" : ""
+            }`}
           >
             <Avatar nombre={usuario.nombreCompleto} url={usuario.avatarUrl} tamano="size-10" />
             <span className={`min-w-0 ${colapsado ? "lg:hidden" : ""}`}>
-              <span className="block truncate text-sm font-semibold text-white">{usuario.nombreCompleto}</span>
-              <span className="block truncate text-xs text-[#d9c3a3]">
+              <span className="block truncate text-sm font-semibold" style={{ color: TONO_CREMITA }}>
+                {usuario.nombreCompleto}
+              </span>
+              <span className="block truncate text-xs opacity-85" style={{ color: TONO_CREMITA }}>
                 {ROLES[usuario.rol]}{usuario.carrera ? ` · ${usuario.carrera}` : ""}
               </span>
             </span>
