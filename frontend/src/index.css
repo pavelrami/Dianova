@@ -1,41 +1,46 @@
 @import "tailwindcss";
 
-/* =====================================================================
-   Tokens de Dianova, tomados del prototipo de Figma (pantallas 01-08).
-   Teoría del color (ver README): base cálida análoga café-caramelo-mantequilla
-   que transmite calma y enfoque; el vino es el complementario cálido de la
-   acción principal; la salvia aporta un contraste frío suave para "completado".
-   ===================================================================== */
+/*
+ * Hoja de estilos principal de Dianova (Tailwind v4).
+ * Define los tokens visuales compartidos entre la portada pública y las vistas
+ * internas, además de reglas base y utilidades de apoyo. Los tonos mantienen
+ * la gama cálida base ajustada para diferenciar la versión actual.
+ */
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --color-espresso: #442816;      /* menú lateral, bloques oscuros */
-  --color-espresso-2: #5c341b;    /* degradado del panel de acceso */
-  --color-canela: #8d532b;        /* exámenes, acento cálido */
-  --color-caramelo: #bd9457;      /* progreso, clases */
-  --color-caramelo-suave: #f3e6cf;
-  --color-mantequilla: #ffe5a8;   /* activo, tarjetas destacadas */
-  --color-mantequilla-suave: #fff3d6;
-  --color-vino: #711b1a;          /* botón principal (CTA) */
-  --color-vino-press: #5a1514;
-  --color-vino-suave: #f6e1df;
-  --color-salvia: #cad8c5;        /* completado, estudio grupal */
-  --color-salvia-tinta: #46613f;
-  --color-tinta: #3b2414;         /* texto principal */
-  --color-tenue: #76604f;         /* texto secundario (AA sobre crema) */
-  --color-crema: #fdfaef;         /* fondo general */
-  --color-crema-2: #fff9eb;
-  --color-superficie: #ffffff;
-  --color-linea: #ece2d4;
-  --color-error: #b3261e;
+  /* Gama cálida y de contraste */
+  --color-espresso: #3f2413;      /* menú lateral y bloques oscuros */
+  --color-espresso-2: #573119;    /* fondo/degradado del acceso */
+  --color-canela: #864d26;        /* acento para exámenes y avisos */
+  --color-caramelo: #b58b4e;      /* indicadores de avance y clases */
+  --color-caramelo-suave: #f0e2c8;
+  --color-mantequilla: #ffe099;   /* resaltado en elementos activos */
+  --color-mantequilla-suave: #fff1cf;
+  --color-vino: #691716;          /* acción principal */
+  --color-vino-press: #521110;
+  --color-vino-suave: #f5dedc;
+  --color-salvia: #c4d4be;        /* estados completados o grupales */
+  --color-salvia-tinta: #415c3a;
 
-  --radius-tarjeta: 18px;
-  --shadow-suave: 0 10px 30px -18px rgb(68 40 22 / 0.35);
-  --shadow-tarjeta: 0 1px 2px rgb(68 40 22 / 0.06), 0 8px 24px -16px rgb(68 40 22 / 0.25);
+  /* Neutros y retroalimentación */
+  --color-tinta: #352011;         /* texto principal */
+  --color-tenue: #6f5949;         /* texto secundario y etiquetas */
+  --color-crema: #fcf8ec;         /* fondo general de la app */
+  --color-crema-2: #fef6e4;
+  --color-superficie: #ffffff;    /* tarjetas y contenedores claros */
+  --color-linea: #e8ddd0;         /* bordes y separadores sutiles */
+  --color-error: #ad231b;
+
+  /* Radios, sombras y curva de transición */
+  --radius-tarjeta: 16px;
+  --shadow-suave: 0 10px 28px -18px rgb(63 36 19 / 0.32);
+  --shadow-tarjeta: 0 1px 2px rgb(63 36 19 / 0.06), 0 8px 22px -16px rgb(63 36 19 / 0.22);
 
   --ease-marca: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* Ajustes base del documento */
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
@@ -44,16 +49,19 @@
     @apply bg-crema text-tinta font-sans antialiased;
     overflow-x: clip;
   }
+  /* Resaltado al seleccionar texto */
   ::selection {
     background: var(--color-mantequilla);
     color: var(--color-tinta);
   }
+  /* Indicador visible al navegar con teclado */
   :focus-visible {
     outline: 2px solid var(--color-vino);
     outline-offset: 2px;
   }
 }
 
+/* Clases de uso repetido en componentes y vistas */
 @layer components {
   .tarjeta {
     @apply bg-superficie border border-linea rounded-[var(--radius-tarjeta)] shadow-[var(--shadow-tarjeta)];
@@ -69,18 +77,19 @@
   }
 }
 
-/* Lenis (solo en la landing) */
+/* Reglas de Lenis para el desplazamiento suave en la portada */
 html.lenis, html.lenis body { height: auto; }
 .lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
 .lenis [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
-/* Animaciones discretas de la app */
+/* Animaciones ligeras de entrada y carga */
 @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .animar-entrada { animation: aparecer 0.35s var(--ease-marca) both; }
 @keyframes brillo { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 .esqueleto { background: var(--color-caramelo-suave); animation: brillo 1.2s ease-in-out infinite; border-radius: 8px; }
 
+/* Reduce animaciones si el sistema lo solicita */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
