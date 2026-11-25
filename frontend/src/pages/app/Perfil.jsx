@@ -16,6 +16,8 @@ import { contrasenaSegura, iguales, longitud, requerido, telefono, url } from ".
 import { ROLES } from "../../utils/etiquetas";
 import { fechaHora } from "../../utils/formato";
 
+const TONO_CANELA = "#dcc6a3";
+
 export default function Perfil() {
   const { usuario } = useAuth();
   const location = useLocation();
@@ -24,23 +26,24 @@ export default function Perfil() {
   }, [location.hash]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="migas">Cuenta</p>
-        <h1 className="titulo-pagina mt-1">Mi perfil</h1>
-      </div>
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-6">
+    <div className="space-y-4 bg-crema font-sans text-[15px] text-tinta">
+      <h1 className="titulo-pagina leading-tight">Mi perfil</h1>
+
+      <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
+        <div className="space-y-5">
           <DatosPerfil />
           <CambiarContrasena />
         </div>
-        <div className="space-y-6">
-          <section className="tarjeta flex items-center gap-4 p-5">
+        <div className="space-y-5">
+          <section className="tarjeta flex items-center gap-4 rounded-sm bg-white p-5">
             <Avatar nombre={usuario.nombreCompleto} url={usuario.avatarUrl} tamano="size-16" />
             <div className="min-w-0">
               <p className="truncate text-lg font-bold text-tinta">{usuario.nombreCompleto}</p>
               <p className="truncate text-sm text-tenue">{usuario.correo}</p>
-              <p className="mt-1 text-sm text-tenue">{ROLES[usuario.rol]}{usuario.ultimoAcceso ? ` · último acceso ${fechaHora(usuario.ultimoAcceso)}` : ""}</p>
+              <p className="mt-1 text-sm text-tenue">
+                {ROLES[usuario.rol]}
+                {usuario.ultimoAcceso ? ` · último acceso ${fechaHora(usuario.ultimoAcceso)}` : ""}
+              </p>
             </div>
           </section>
           <Preferencias />
@@ -55,7 +58,13 @@ function DatosPerfil() {
   const toast = useToast();
   const [guardando, setGuardando] = useState(false);
   const f = useFormulario(
-    { nombre: usuario.nombre, apellidos: usuario.apellidos, telefono: usuario.telefono || "", carrera: usuario.carrera || "", avatarUrl: usuario.avatarUrl || "" },
+    {
+      nombre: usuario.nombre,
+      apellidos: usuario.apellidos,
+      telefono: usuario.telefono || "",
+      carrera: usuario.carrera || "",
+      avatarUrl: usuario.avatarUrl || "",
+    },
     {
       nombre: [requerido("El nombre es obligatorio"), longitud(2, 80, "El nombre")],
       apellidos: [requerido("Los apellidos son obligatorios"), longitud(2, 120, "Los apellidos")],
@@ -70,7 +79,11 @@ function DatosPerfil() {
     if (!f.validarTodo()) return;
     setGuardando(true);
     try {
-      const u = await perfilApi.actualizar({ ...f.valores, telefono: f.valores.telefono.trim() || null, avatarUrl: f.valores.avatarUrl.trim() || null });
+      const u = await perfilApi.actualizar({
+        ...f.valores,
+        telefono: f.valores.telefono.trim() || null,
+        avatarUrl: f.valores.avatarUrl.trim() || null,
+      });
       actualizarUsuario(u);
       toast.exito("Perfil actualizado");
     } catch (err) {
@@ -81,20 +94,40 @@ function DatosPerfil() {
   };
 
   return (
-    <section className="tarjeta p-5 sm:p-6">
+    <section className="tarjeta rounded-sm bg-white p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-tinta">Datos personales</h2>
       <form onSubmit={guardar} noValidate className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Campo etiqueta="Nombre" {...f.campo("nombre")} />
           <Campo etiqueta="Apellidos" {...f.campo("apellidos")} />
         </div>
-        <Campo etiqueta="Correo electrónico" value={usuario.correo} disabled ayuda="Es tu identificador de acceso; solo el administrador puede cambiarlo." />
+        <Campo
+          etiqueta="Correo electrónico"
+          value={usuario.correo}
+          disabled
+          ayuda="Es tu identificador de acceso; solo el administrador puede cambiarlo."
+        />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Campo etiqueta="Teléfono" opcional type="tel" placeholder="+5215512345678" ayuda="Formato internacional, necesario para SMS y WhatsApp" {...f.campo("telefono")} />
+          <Campo
+            etiqueta="Teléfono"
+            opcional
+            type="tel"
+            placeholder="+5215512345678"
+            ayuda="Formato internacional, necesario para SMS y WhatsApp"
+            {...f.campo("telefono")}
+          />
           <Campo etiqueta="Carrera" opcional {...f.campo("carrera")} />
         </div>
-        <Campo etiqueta="Imagen de perfil (URL)" opcional placeholder="https://…" ayuda="Si lo dejas vacío, usamos tus iniciales como avatar" {...f.campo("avatarUrl")} />
-        <Boton type="submit" icono={Save} cargando={guardando}>Guardar cambios</Boton>
+        <Campo
+          etiqueta="Imagen de perfil (URL)"
+          opcional
+          placeholder="https://…"
+          ayuda="Si lo dejas vacío, usamos tus iniciales como avatar"
+          {...f.campo("avatarUrl")}
+        />
+        <Boton type="submit" icono={Save} cargando={guardando}>
+          Guardar cambios
+        </Boton>
       </form>
     </section>
   );
@@ -128,7 +161,7 @@ function CambiarContrasena() {
   };
 
   return (
-    <section className="tarjeta p-5 sm:p-6">
+    <section className="tarjeta rounded-sm bg-white p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-tinta">Contraseña</h2>
       <form onSubmit={guardar} noValidate className="mt-4 space-y-4">
         <Campo etiqueta="Contraseña actual" type="password" autoComplete="current-password" {...f.campo("actual")} />
@@ -137,7 +170,9 @@ function CambiarContrasena() {
           <ReglasContrasena valor={f.valores.nueva} />
         </div>
         <Campo etiqueta="Confirmar nueva contraseña" type="password" autoComplete="new-password" {...f.campo("confirmar")} />
-        <Boton type="submit" variante="oscuro" icono={KeyRound} cargando={guardando}>Cambiar contraseña</Boton>
+        <Boton type="submit" variante="oscuro" icono={KeyRound} cargando={guardando}>
+          Cambiar contraseña
+        </Boton>
       </form>
     </section>
   );
@@ -154,7 +189,10 @@ function Preferencias() {
 
   const cambiar = (campo, valor) => {
     setDatos((d) => ({ ...d, [campo]: valor }));
-    setErrores((e) => ({ ...e, [campo]: valor && sinTelefono && campo !== "emailHabilitado" ? "Agrega tu teléfono en el perfil para activar este canal" : null }));
+    setErrores((e) => ({
+      ...e,
+      [campo]: valor && sinTelefono && campo !== "emailHabilitado" ? "Agrega tu teléfono en el perfil para activar este canal" : null,
+    }));
   };
 
   const guardar = async () => {
@@ -164,7 +202,12 @@ function Preferencias() {
     if (errAnt || Object.values(errores).some(Boolean)) return;
     setGuardando(true);
     try {
-      const r = await perfilApi.guardarPreferencias({ emailHabilitado: datos.emailHabilitado, smsHabilitado: datos.smsHabilitado, whatsappHabilitado: datos.whatsappHabilitado, minutosAnticipacion: min });
+      const r = await perfilApi.guardarPreferencias({
+        emailHabilitado: datos.emailHabilitado,
+        smsHabilitado: datos.smsHabilitado,
+        whatsappHabilitado: datos.whatsappHabilitado,
+        minutosAnticipacion: min,
+      });
       setDatos(r);
       toast.exito("Preferencias guardadas");
     } catch (err) {
@@ -176,30 +219,62 @@ function Preferencias() {
   };
 
   return (
-    <section id="notificaciones" className="tarjeta scroll-mt-24 p-5 sm:p-6">
-      <h2 className="flex items-center gap-2 text-lg font-semibold text-tinta"><BellRing className="size-5 text-canela" aria-hidden /> Notificaciones</h2>
-      <p className="mt-1 text-sm text-tenue">Elige por dónde quieres recibir avisos de tareas, eventos y recordatorios. Solo usamos los canales que actives.</p>
+    <section id="notificaciones" className="tarjeta scroll-mt-24 rounded-sm bg-white p-5 sm:p-6">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-tinta">
+        <span className="grid size-7 place-items-center rounded-sm text-[#1f1916]" style={{ backgroundColor: TONO_CANELA }}>
+          <BellRing className="size-4" aria-hidden />
+        </span>
+        Notificaciones
+      </h2>
+      <p className="mt-1 text-sm text-tenue">
+        Elige por dónde quieres recibir avisos de tareas, eventos y recordatorios. Solo usamos los canales que actives.
+      </p>
       {error ? (
-        <div className="mt-4"><ErrorCarga error={error} onReintentar={recargar} /></div>
+        <div className="mt-4">
+          <ErrorCarga error={error} onReintentar={recargar} />
+        </div>
       ) : cargando || !datos ? (
         <Spinner />
       ) : (
         <div className="mt-5 space-y-5">
-          <Interruptor etiqueta="Correo electrónico" descripcion={usuario.correo} checked={datos.emailHabilitado} onChange={(v) => cambiar("emailHabilitado", v)} error={errores.emailHabilitado} />
-          <Interruptor etiqueta="SMS" descripcion={usuario.telefono || "Sin teléfono registrado"} checked={datos.smsHabilitado} onChange={(v) => cambiar("smsHabilitado", v)} error={errores.smsHabilitado} />
-          <Interruptor etiqueta="WhatsApp" descripcion={usuario.telefono ? `${usuario.telefono} · debe unirse al sandbox de Twilio` : "Sin teléfono registrado"} checked={datos.whatsappHabilitado} onChange={(v) => cambiar("whatsappHabilitado", v)} error={errores.whatsappHabilitado} />
+          <Interruptor
+            etiqueta="Correo electrónico"
+            descripcion={usuario.correo}
+            checked={datos.emailHabilitado}
+            onChange={(v) => cambiar("emailHabilitado", v)}
+            error={errores.emailHabilitado}
+          />
+          <Interruptor
+            etiqueta="SMS"
+            descripcion={usuario.telefono || "Sin teléfono registrado"}
+            checked={datos.smsHabilitado}
+            onChange={(v) => cambiar("smsHabilitado", v)}
+            error={errores.smsHabilitado}
+          />
+          <Interruptor
+            etiqueta="WhatsApp"
+            descripcion={usuario.telefono ? `${usuario.telefono} · debe unirse al sandbox de Twilio` : "Sin teléfono registrado"}
+            checked={datos.whatsappHabilitado}
+            onChange={(v) => cambiar("whatsappHabilitado", v)}
+            error={errores.whatsappHabilitado}
+          />
           <Campo
             etiqueta="Anticipación de los recordatorios (minutos)"
             type="number"
             min="5"
             max="10080"
             value={datos.minutosAnticipacion}
-            onChange={(e) => { setDatos((d) => ({ ...d, minutosAnticipacion: e.target.value })); setErrorAnticipacion(null); }}
+            onChange={(e) => {
+              setDatos((d) => ({ ...d, minutosAnticipacion: e.target.value }));
+              setErrorAnticipacion(null);
+            }}
             error={errorAnticipacion}
             ayuda="Se usa para sugerir la hora de tus recordatorios. 60 = una hora antes"
           />
           {datos.consentimientoEn && <p className="text-xs text-tenue">Consentimiento actualizado {fechaHora(datos.consentimientoEn)}</p>}
-          <Boton icono={Save} onClick={guardar} cargando={guardando}>Guardar preferencias</Boton>
+          <Boton icono={Save} onClick={guardar} cargando={guardando}>
+            Guardar preferencias
+          </Boton>
         </div>
       )}
     </section>
