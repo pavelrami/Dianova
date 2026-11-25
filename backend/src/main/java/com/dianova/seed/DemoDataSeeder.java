@@ -140,6 +140,20 @@ public class DemoDataSeeder implements CommandLineRunner {
                 hoy.minusWeeks(14), hoy.plusWeeks(5), true);
         periodo(segundoSemestre ? (anio + 1) + "-1" : anio + "-2",
                 hoy.plusWeeks(9), hoy.plusWeeks(29), false);
+        // Historial: ocho semestres anteriores al "anterior" (catálogo con 11 periodos)
+        int anioHist = segundoSemestre ? anio : anio - 1;
+        int semHist = segundoSemestre ? 1 : 2;
+        for (int k = 0; k < 8; k++) {
+            if (semHist == 1) {
+                anioHist--;
+                semHist = 2;
+            } else {
+                semHist = 1;
+            }
+            periodo(anioHist + "-" + semHist,
+                    semHist == 1 ? LocalDate.of(anioHist, 1, 19) : LocalDate.of(anioHist, 8, 10),
+                    semHist == 1 ? LocalDate.of(anioHist, 6, 12) : LocalDate.of(anioHist, 12, 18), false);
+        }
 
         // ------------------------------------------------------------------ materias + horarios
         Object[][] mats = {

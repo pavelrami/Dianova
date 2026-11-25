@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, GraduationCap } from "lucide-react";
+import { Plus, Pencil, Trash2, GraduationCap, Search } from "lucide-react";
 import { periodosApi } from "../../../api/servicios";
-import useConsulta from "../../../hooks/useConsulta";
+import useConsulta, { useRetraso } from "../../../hooks/useConsulta";
 import useFormulario from "../../../hooks/useFormulario";
 import Boton from "../../../components/ui/Boton";
 import Campo from "../../../components/ui/Campo";
@@ -15,12 +15,19 @@ import { longitud, posteriorA, requerido } from "../../../utils/validaciones";
 /** Periodos académicos (semestres). Solo uno puede estar activo. */
 export default function Periodos() {
   const toast = useToast();
+  const [q, setQ] = useState("");
+  const [activo, setActivo] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [formulario, setFormulario] = useState({ abierto: false, periodo: null });
   const [eliminar, setEliminar] = useState(null);
   const [eliminando, setEliminando] = useState(false);
-  const { datos, cargando, error, recargar } = useConsulta((s) => periodosApi.listar({ page, size }, s), [page, size]);
+  const qr = useRetraso(q);
+
+  // Los filtros viajan a la API como parámetros; el servidor pagina y filtra
+  useEffect(() => setPage(0), [qr, activo, size]);
+  const params = { q: qr, activo, page, size };
+  const { datos, cargando, error, recargar } = useConsulta((s) => periodosApi.listar(params, s), [JSON.stringify(params)]);
 
   const confirmar = async () => {
     setEliminando(true);
@@ -47,12 +54,24 @@ export default function Periodos() {
         <Boton icono={Plus} onClick={() => setFormulario({ abierto: true, periodo: null })}>Nuevo periodo</Boton>
       </div>
       <section className="tarjeta overflow-hidden">
+        <div className="grid gap-2 border-b border-linea p-4 sm:grid-cols-[1fr_200px]">
+          <label className="relative">
+            <span className="sr-only">Buscar periodo</span>
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tenue" aria-hidden />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar periodo (ej. 2025)…" className="h-11 w-full rounded-xl border border-linea bg-white pl-9 pr-3 text-sm outline-none focus:border-caramelo" />
+          </label>
+          <select value={activo} onChange={(e) => setActivo(e.target.value)} className="h-11 rounded-xl border border-linea bg-white px-3 text-sm" aria-label="Estado del periodo">
+            <option value="">Todos los periodos</option>
+            <option value="true">Periodo actual</option>
+            <option value="false">Otros periodos</option>
+          </select>
+        </div>
         {error ? (
           <div className="p-4"><ErrorCarga error={error} onReintentar={recargar} /></div>
         ) : cargando && !datos ? (
           <FilasEsqueleto filas={3} columnas={3} />
         ) : datos.contenido.length === 0 ? (
-          <Vacio titulo="Sin periodos" icono={GraduationCap} />
+          <Vacio titulo="Sin periodos" mensaje={qr || activo ? "Ningún periodo coincide con estos filtros." : undefined} icono={GraduationCap} />
         ) : (
           <ul className={`divide-y divide-linea ${cargando ? "opacity-60" : ""}`}>
             {datos.contenido.map((p) => (

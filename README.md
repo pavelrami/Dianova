@@ -43,7 +43,7 @@ Regla clave del modelo: **una tarea o evento nunca se muestra solo por conocer s
 
 ## Credenciales de prueba
 
-Las carga `DemoDataSeeder` (perfil `demo`) junto con 20 usuarios, 14 materias, 30 tareas, 15 eventos y más datos de ejemplo.
+Las carga `DemoDataSeeder` (perfil `demo`) junto con 20 usuarios, 11 periodos, 14 materias, 19 horarios, 69 inscripciones, 30 tareas, 15 eventos, 15 recordatorios y más datos de ejemplo.
 
 | Rol | Correo | Contraseña |
 |---|---|---|
@@ -249,6 +249,8 @@ npm run dev                     # http://localhost:5173  (redirige /api al backe
 
 Para restaurar el respaldo en lugar de usar el seeder: `mysql -u root -p < database/dianova_respaldo.sql`.
 
+Para ejecutar el JAR compilado (`backend/target/dianova-api.jar`), indica dónde está la configuración, porque el JAR no la incluye: `java -jar target/dianova-api.jar --spring.config.additional-location=file:src/main/resources/`.
+
 ## API REST (resumen)
 
 Base: `/api`. Todas las rutas, salvo las marcadas como públicas, requieren `Authorization: Bearer <JWT>`. Los listados son **paginados en el servidor** (`page`, `size` ≤ 50) y reciben los **filtros como parámetros**; responden `{ contenido, pagina, tamano, totalElementos, totalPaginas, primera, ultima }`.
@@ -303,7 +305,23 @@ Cada envío queda registrado en `recordatorios` con su estado (`PENDIENTE → EN
 
 ## Despliegue en el VPS
 
-Guía paso a paso en [`deploy/GUIA-VPS.md`](deploy/GUIA-VPS.md): MySQL 8, usuario de servicio, `application.properties` en `/etc/dianova`, JAR con **systemd** ([`dianova-api.service`](deploy/systemd/dianova-api.service)), build estático servido por **Nginx** ([`dianova.conf`](deploy/nginx/dianova.conf)), **HTTPS con Certbot**, **Postfix + OpenDKIM** con registros SPF/DKIM/DMARC y Twilio. Para actualizar: `bash deploy/desplegar.sh`.
+Todo corre en el VPS del equipo (Hostinger, Ubuntu): **MySQL 8**, la API como **JAR con systemd** (escuchando solo en `127.0.0.1`), el **build estático de React** en `/var/www/dianova` servido por **Nginx**, y **HTTPS con Let's Encrypt (Certbot)**. El VPS también aloja otro proyecto; Dianova usa su propio sitio de Nginx, su propio puerto interno y su propia base de datos, sin tocar lo demás.
+
+```powershell
+# En tu PC: compila y arma el paquete (JAR + build de React + scripts)
+powershell -ExecutionPolicy Bypass -File deploy\empaquetar.ps1
+scp deploy\paquete\dianova-paquete.tar.gz root@IP-DEL-VPS:/root/
+```
+
+```bash
+# En el VPS, como root
+cd /root && tar xzf dianova-paquete.tar.gz && cd dianova-paquete
+bash instalar.sh TU-DOMINIO     # MySQL 8, base y usuario, servicio systemd, Nginx
+certbot --nginx -d TU-DOMINIO   # certificado HTTPS gratuito
+bash actualizar.sh              # en despliegues posteriores
+```
+
+`instalar.sh` genera en el servidor la contraseña de MySQL y la clave JWT y las guarda solo en `/etc/dianova/application.properties` (permisos 640). El JAR **no incluye** la configuración local: la lee de `/etc/dianova/`. Detalles, instalación manual y correo con **Postfix + OpenDKIM** (SPF/DKIM/DMARC) en [`deploy/GUIA-VPS.md`](deploy/GUIA-VPS.md); scripts en [`deploy/hostinger/`](deploy/hostinger/).
 
 ## Respaldo de la base de datos
 

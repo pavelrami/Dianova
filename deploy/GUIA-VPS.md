@@ -1,5 +1,29 @@
 # Guía de despliegue en el VPS (Ubuntu 24.04)
 
+## Despliegue rápido en Hostinger (VPS compartido con otro proyecto)
+
+El VPS de Hostinger ya sirve otro sitio con Nginx (Nexo Ñuu). Dianova se instala **al lado** sin tocarlo: un sitio nuevo de Nginx que solo responde a su dominio, la API en un puerto interno libre (8090-8099, solo `127.0.0.1`) y su propia base de datos en MySQL 8.
+
+**En tu PC (PowerShell, raíz del repositorio):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\empaquetar.ps1
+scp deploy\paquete\dianova-paquete.tar.gz root@IP-DEL-VPS:/root/
+```
+
+**En el VPS (como root):**
+
+```bash
+cd /root && tar xzf dianova-paquete.tar.gz && cd dianova-paquete
+bash diagnostico.sh            # solo lectura: puertos, Nginx, Java, MySQL
+bash instalar.sh TU-DOMINIO    # MySQL 8 + base y usuario, JAR con systemd, build en /var/www/dianova, sitio de Nginx
+certbot --nginx -d TU-DOMINIO  # HTTPS con Let's Encrypt (pide correo y aceptar términos)
+```
+
+`instalar.sh` genera en el servidor una contraseña aleatoria para el usuario `dianova` de MySQL y la clave JWT, y las guarda solo en `/etc/dianova/application.properties` (permisos 640); nunca pasan por el repositorio ni por el chat. Para publicar una versión nueva: vuelve a ejecutar `empaquetar.ps1`, sube el paquete y corre `bash actualizar.sh`. Para regenerar `database/dianova_respaldo.sql`: `bash respaldo.sh`.
+
+El resto de esta guía describe la instalación manual paso a paso y la configuración de correo (Postfix + OpenDKIM).
+
 Todo corre en el mismo servidor: **MySQL 8**, la **API Spring Boot** como JAR con systemd, el **frontend React** como build estático servido por **Nginx**, **HTTPS con Let's Encrypt (Certbot)** y **correo propio con Postfix + OpenDKIM**. No se usa Vercel, Railway, SendGrid ni Mailgun.
 
 > Reemplaza `TU-DOMINIO` por tu dominio (por ejemplo `dianova.midominio.com`) y `IP-DEL-VPS` por la IP pública.
@@ -73,7 +97,8 @@ curl http://127.0.0.1:8080/api/salud
 sudo cp ~/Dianova/deploy/nginx/dianova.conf /etc/nginx/sites-available/
 sudo sed -i 's/TU-DOMINIO/tu.dominio.real/g' /etc/nginx/sites-available/dianova.conf
 sudo ln -s /etc/nginx/sites-available/dianova.conf /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
+# Solo en un VPS dedicado a Dianova (en uno compartido NO borres el sitio default de otro proyecto):
+# sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 sudo ufw allow 'Nginx Full' && sudo ufw allow OpenSSH && sudo ufw allow 25/tcp
 sudo certbot --nginx -d TU-DOMINIO -d www.TU-DOMINIO --redirect -m tu-correo@ejemplo.com --agree-tos

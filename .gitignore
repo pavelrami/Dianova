@@ -22,3 +22,6 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 .claude/
+
+# --- Paquete de despliegue generado por deploy/empaquetar.ps1 ---
+deploy/paquete/
