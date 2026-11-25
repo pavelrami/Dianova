@@ -1,12 +1,22 @@
 import { Loader2 } from "lucide-react";
 
+const TONO_BOTON_CLARO = "#7a4924";
+const TONO_CREMITA = "#faf6ee";
+const TONO_CANELA = "#dcc6a3";
+
 const variantes = {
-  primario: "bg-vino text-white hover:bg-vino-press active:scale-[.98] shadow-[0_6px_16px_-8px_rgb(113_27_26/.7)]",
+  primario: "active:scale-[.98] hover:brightness-105",
   secundario: "bg-white text-tinta border border-linea hover:border-caramelo hover:bg-crema-2",
-  suave: "bg-mantequilla text-tinta hover:bg-[#ffdb8a]",
+  suave: "hover:brightness-95",
   fantasma: "text-tinta hover:bg-caramelo-suave/60",
   peligro: "bg-error text-white hover:bg-[#8f1e18]",
-  oscuro: "bg-espresso text-mantequilla hover:bg-[#341e10]",
+  oscuro: "hover:brightness-105",
+};
+
+const estilosVariante = {
+  primario: { backgroundColor: TONO_BOTON_CLARO, color: TONO_CREMITA },
+  suave: { backgroundColor: TONO_CANELA, color: "#1f1916" },
+  oscuro: { backgroundColor: TONO_BOTON_CLARO, color: TONO_CREMITA },
 };
 
 const tamanos = {
@@ -23,6 +33,7 @@ export default function Boton({
   cargando = false,
   icono: Icono,
   className = "",
+  style,
   children,
   disabled,
   type = "button",
@@ -33,7 +44,8 @@ export default function Boton({
       type={type}
       disabled={disabled || cargando}
       aria-busy={cargando || undefined}
-      className={`inline-flex items-center justify-center rounded-xl font-semibold transition-[background,transform,border-color,color] duration-200 disabled:opacity-60 disabled:cursor-not-allowed select-none ${variantes[variante]} ${tamanos[tamano]} ${className}`}
+      style={{ ...estilosVariante[variante], ...style }}
+      className={`inline-flex items-center justify-center rounded-sm font-semibold transition-[background,transform,border-color,color,filter] duration-200 disabled:opacity-60 disabled:cursor-not-allowed select-none ${variantes[variante]} ${tamanos[tamano]} ${className}`}
       {...props}
     >
       {cargando ? <Loader2 className="size-4 animate-spin" aria-hidden /> : Icono ? <Icono className="size-4" aria-hidden /> : null}
