@@ -173,11 +173,11 @@ export default function Landing() {
       </header>
 
       {/* Portada */}
-      <section className="relative overflow-hidden border-b border-linea" data-portada>
+      <section className="relative overflow-hidden border-b border-linea bg-[#dfcaa8] text-tinta" data-portada>
         <TramaLibro />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-10 sm:px-6 md:grid-cols-[1.05fr_1fr] md:pb-24 md:pt-16">
           <div>
-            <p className="inline-flex items-center rounded-sm border border-linea bg-crema-2 px-3 py-1 font-medium text-tinta" data-hero-meta-item>
+            <p className="inline-flex items-center rounded-sm border border-linea bg-superficie px-3 py-1 font-medium text-tinta" data-hero-meta-item>
               Planificación académica
             </p>
             <h1 className="mt-4 text-xl font-semibold leading-snug tracking-tight sm:text-2xl">
@@ -191,7 +191,7 @@ export default function Landing() {
               </span>
             </h1>
             <div data-hero-meta>
-              <p className="mt-4 max-w-lg leading-relaxed text-tenue">
+              <p className="mt-4 max-w-lg leading-relaxed text-tinta/85">
                 Organiza tus clases, tareas, eventos y recordatorios en un solo lugar. Para estudiantes, docentes y administradores.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -204,7 +204,7 @@ export default function Landing() {
                 {!autenticado && (
                   <Link
                     to="/login"
-                    className="inline-flex h-11 items-center justify-center rounded-sm border border-linea bg-superficie px-5 font-semibold text-tinta hover:bg-crema-2"
+                    className="inline-flex h-11 items-center justify-center rounded-sm border border-linea bg-superficie px-5 font-semibold text-tinta hover:bg-crema"
                   >
                     Ya tengo cuenta
                   </Link>
@@ -507,12 +507,12 @@ function TrazoOrden() {
 function TramaLibro() {
   return (
     <svg
-      className="pointer-events-none absolute -right-40 -top-24 h-[520px] w-[520px] opacity-[.06]"
+      className="pointer-events-none absolute -right-40 -top-24 h-[520px] w-[520px] opacity-[.07]"
       viewBox="0 0 64 64"
       aria-hidden
     >
-      <path d="M12 22c6-2.6 12.4-2.6 19 1.6V47c-6.6-4.2-13-4.2-19-1.6Z" fill="none" stroke="#6f5949" strokeWidth="1" />
-      <path d="M52 22c-6-2.6-12.4-2.6-19 1.6V47c6.6-4.2 13-4.2 19-1.6Z" fill="none" stroke="#6f5949" strokeWidth="1" />
+      <path d="M12 22c6-2.6 12.4-2.6 19 1.6V47c-6.6-4.2-13-4.2-19-1.6Z" fill="none" stroke="#442816" strokeWidth="1" />
+      <path d="M52 22c-6-2.6-12.4-2.6-19 1.6V47c6.6-4.2 13-4.2 19-1.6Z" fill="none" stroke="#442816" strokeWidth="1" />
     </svg>
   );
 }
