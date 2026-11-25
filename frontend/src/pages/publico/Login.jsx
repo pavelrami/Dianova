@@ -40,37 +40,21 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout
-      titulo="Acceso al seguimiento de materias"
-      subtitulo="Consulta tus tareas, horarios de clase y avisos del semestre."
-    >
-      <h2 className="text-center text-lg font-semibold text-espresso">Inicia sesión en tu cuenta</h2>
-      <p className="mt-1.5 text-center text-[15px] text-tenue">Ingresa tus datos para acceder a tu planificador</p>
+    <AuthLayout titulo="Cada gran logro empieza con orden" subtitulo="Organiza tus clases, tareas y recordatorios.">
+      <h2 className="text-center text-2xl font-bold text-espresso">Inicia sesión en tu cuenta</h2>
+      <p className="mt-1.5 text-center text-sm text-tenue">Ingresa tus datos para acceder a tu planificador</p>
 
-      <form onSubmit={enviar} noValidate className="mt-6 space-y-4">
+      <form onSubmit={enviar} noValidate className="mt-7 space-y-4">
         {errorGeneral && (
-          <p className="flex items-start gap-2 rounded-sm border border-vino/30 bg-superficie px-3 py-2.5 text-[15px] text-vino" role="alert">
+          <p className="flex items-start gap-2 rounded-xl border border-vino/25 bg-white/70 px-3 py-2.5 text-sm text-vino" role="alert">
             <AlertCircle className="mt-0.5 size-4 shrink-0" /> {errorGeneral}
           </p>
         )}
-        <Campo
-          etiqueta="Correo electrónico"
-          type="email"
-          autoComplete="email"
-          placeholder="correo@ejemplo.com"
-          icono={Mail}
-          {...f.campo("correo")}
-        />
+        <Campo etiqueta="Correo electrónico" type="email" autoComplete="email" placeholder="correo@ejemplo.com" icono={Mail} {...f.campo("correo")} />
         <div>
-          <Campo
-            etiqueta="Contraseña"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            {...f.campo("contrasena")}
-          />
+          <Campo etiqueta="Contraseña" type="password" autoComplete="current-password" placeholder="••••••••" {...f.campo("contrasena")} />
           <div className="mt-2 text-right">
-            <Link to="/recuperar" className="text-[15px] font-medium text-canela hover:text-vino hover:underline">
+            <Link to="/recuperar" className="text-sm font-medium text-canela hover:text-vino hover:underline">
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -80,7 +64,7 @@ export default function Login() {
         </Boton>
       </form>
 
-      <p className="mt-6 text-center text-[15px] text-tinta">
+      <p className="mt-7 text-center text-sm text-tinta">
         ¿No tienes cuenta?{" "}
         <Link to="/registro" className="font-semibold text-vino hover:underline">
           Regístrate
