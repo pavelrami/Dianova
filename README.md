@@ -17,7 +17,7 @@ Spring Boot · React · MySQL 8 · JWT · Correo con Postfix · SMS y WhatsApp c
 | Proyecto desplegado (HTTPS) | **[https://TU-DOMINIO](https://TU-DOMINIO)** |
 | URL base de la API | **`https://TU-DOMINIO/api`** (salud: `GET /api/salud`) |
 | Repositorio | https://github.com/pavelrami/Dianova |
-| Tablero GitHub Projects | **[ENLACE AL TABLERO PÚBLICO]** (columnas Backlog, To Do, In Progress, In Review, Done) |
+| Tablero GitHub Projects | **https://github.com/users/pavelrami/projects/3** (columnas Backlog, To Do, In Progress, In Review, Done) |
 | Prototipo navegable en Figma | https://www.figma.com/design/Sz5DqCOxJm5mjzAloVFSTB/Login |
 
 ## Descripción
