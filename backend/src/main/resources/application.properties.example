@@ -58,6 +58,9 @@ dianova.notificaciones.max-intentos=3
 dianova.notificaciones.minutos-reintento=5
 # Los correos de datos de demostración usan el dominio reservado .test y nunca se envían
 dianova.notificaciones.dominios-demo=dianova.test
+# Códigos de 6 dígitos (registro y recuperación): si no se pudieron enviar, se escriben en el log.
+# Úsalo SOLO en desarrollo; en producción debe ir en false.
+dianova.notificaciones.codigos-en-log=false
 
 dianova.notificaciones.correo.habilitado=true
 dianova.notificaciones.correo.remitente=no-responder@TU-DOMINIO

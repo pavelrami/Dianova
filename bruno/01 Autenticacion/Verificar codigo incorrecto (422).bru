@@ -1,0 +1,28 @@
+meta {
+  name: Verificar codigo incorrecto (422)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/auth/recuperar/verificar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "no-existe@dianova.test",
+    "codigo": "123456"
+  }
+}
+
+tests {
+  test("responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+  test("no entrega token", function() {
+    expect(res.body).to.not.have.property("token");
+    expect(res.body.errores).to.have.property("codigo");
+  });
+}

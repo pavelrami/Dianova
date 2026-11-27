@@ -1,0 +1,35 @@
+meta {
+  name: 429 codigo pedido dos veces
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/auth/registro/codigo
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "{{correoLimite}}"
+  }
+}
+
+script:pre-request {
+  // Primer envío; el segundo (esta petición) llega antes de 60 s
+  const correo = "limite." + Date.now() + "@dianova.test";
+  bru.setVar("correoLimite", correo);
+  const axios = require("axios");
+  await axios.post(bru.getEnvVar("baseUrl") + "/auth/registro/codigo", { correo }).catch(() => {});
+}
+
+tests {
+  // Solo aplica si el primer envío se guardó (local con codigos-en-log=true)
+  test("responde 429 con Retry-After (o 503 sin servidor de correo)", function() {
+    expect([429, 503]).to.include(res.status);
+    if (res.status === 429) {
+      expect(res.headers["retry-after"]).to.exist;
+    }
+  });
+}

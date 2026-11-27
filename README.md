@@ -28,6 +28,8 @@ Dianova centraliza **materias, horarios, tareas, entregas, eventos y recordatori
 - **Docente:** publica tareas (borrador → publicada) y eventos de las materias que imparte; cada estudiante inscrito recibe su propio seguimiento y un aviso por los canales que autorizó; consulta inscritos, avance y asistencia.
 - **Administrador:** acceso total: gestiona usuarios y roles, periodos, materias, horarios, inscripciones y supervisa los envíos.
 
+- **Cuenta:** el estudiante crea su cuenta confirmando su correo con un **código de 6 dígitos**, y si olvida su contraseña la recupera con un código que elige recibir **por correo o por SMS**.
+
 Regla clave del modelo: **una tarea o evento nunca se muestra solo por conocer su ID**; el backend siempre verifica autoría, matrícula, docencia o rol de administrador.
 
 ## Tecnologías
@@ -57,7 +59,7 @@ Otros docentes (`esantos@`, `rcastillo@`, `csilva@`, `dortega@dianova.test`) usa
 
 ## Diagrama Entidad-Relación
 
-14 tablas en 3FN. Las relaciones **N:M** se resuelven con entidades asociativas porque guardan datos propios de la relación:
+15 tablas en 3FN (la migración `V3` agregó `codigos_verificacion` y `usuarios.correo_verificado_en`). Las relaciones **N:M** se resuelven con entidades asociativas porque guardan datos propios de la relación:
 **estudiante ↔ materia** (`inscripciones`), **estudiante ↔ tarea** (`seguimientos_tarea`) y **usuario ↔ evento** (`participaciones_evento`).
 
 ```mermaid
@@ -66,6 +68,7 @@ erDiagram
     USUARIOS ||--o| PREFERENCIAS_NOTIFICACION : "autoriza canales"
     USUARIOS ||--o{ SESIONES_JWT : "abre"
     USUARIOS ||--o{ TOKENS_RECUPERACION : "solicita"
+    USUARIOS |o--o{ CODIGOS_VERIFICACION : "recibe (null en registro)"
     PERIODOS_ACADEMICOS ||--o{ MATERIAS : "agrupa"
     USUARIOS |o--o{ MATERIAS : "imparte (docente)"
     MATERIAS ||--o{ HORARIOS_CLASE : "tiene"
@@ -92,6 +95,7 @@ erDiagram
                varchar nombre
                varchar apellidos
                varchar correo UK "utf8mb4_0900_ai_ci"
+               datetime correo_verificado_en "null si lo creó el admin"
                varchar password_hash "BCrypt"
                varchar telefono "E.164"
                varchar carrera
@@ -179,9 +183,19 @@ erDiagram
                           varchar token_hash UK "SHA-256"
                           datetime expira_en
                           datetime usado_en }
+    CODIGOS_VERIFICACION { bigint id_codigo PK
+                           bigint id_usuario FK "null en REGISTRO"
+                           varchar proposito "REGISTRO | RECUPERACION"
+                           varchar canal "EMAIL | SMS"
+                           varchar destino "correo o teléfono"
+                           varchar codigo_hash "HMAC-SHA256"
+                           int intentos "máximo 5"
+                           datetime expira_en "10 min"
+                           datetime usado_en
+                           varchar ip }
 ```
 
-Restricciones destacadas: correo único sin distinguir mayúsculas; `UNIQUE(id_periodo, codigo_grupo)`; `UNIQUE(id_estudiante, id_materia)`; `UNIQUE(id_tarea, id_estudiante)`; `UNIQUE(id_evento, id_usuario)`; `CHECK` de rangos de fechas y horas; `CHECK ((id_tarea IS NULL) <> (id_evento IS NULL))` en recordatorios.
+Restricciones destacadas: correo único sin distinguir mayúsculas; `UNIQUE(id_periodo, codigo_grupo)`; `UNIQUE(id_estudiante, id_materia)`; `UNIQUE(id_tarea, id_estudiante)`; `UNIQUE(id_evento, id_usuario)`; `CHECK` de rangos de fechas y horas; `CHECK ((id_tarea IS NULL) <> (id_evento IS NULL))` en recordatorios; en `codigos_verificacion`, el registro solo se confirma por correo (`CHECK (proposito <> 'REGISTRO' OR canal = 'EMAIL')`) y los intentos van de 0 a 10.
 
 Diagramas del documento de modelado: [E-R conceptual](docs/diagramas/er-conceptual.png) · [relacional académico](docs/diagramas/relacional-academico.png) · [relacional de seguridad](docs/diagramas/relacional-seguridad.png) · [casos de uso](docs/diagramas/casos-de-uso.png) · [flujo de publicar tarea](docs/diagramas/flujo-publicar-tarea.png) · [estados de la tarea](docs/diagramas/estados-tarea.png) · [arquitectura en el VPS](docs/diagramas/arquitectura-vps.png).
 
@@ -208,7 +222,7 @@ backend/            API Spring Boot (Maven wrapper incluido)
   src/main/java/com/dianova/
     config/         Seguridad, CORS, propiedades
     security/       JWT, filtro, sesiones revocables
-    domain/         Entidades JPA (14 tablas)
+    domain/         Entidades JPA (15 tablas)
     repository/     Consultas JPQL con JOIN FETCH y filtros del servidor
     dto/            DTO de entrada (Bean Validation) y de salida
     service/        Reglas de negocio y permisos
@@ -257,9 +271,13 @@ Base: `/api`. Todas las rutas, salvo las marcadas como públicas, requieren `Aut
 
 | Método y ruta | Descripción |
 |---|---|
-| `POST /auth/login` · `POST /auth/registro` (públicas) | Devuelven `{ token, tipo, expiraEn, usuario }` |
+| `POST /auth/login` (pública) | Devuelve `{ token, tipo, expiraEn, usuario }` |
+| `POST /auth/registro/codigo` (pública) | Registro paso 1: envía un código de 6 dígitos al correo (`429` si se pide antes de 60 s) |
+| `POST /auth/registro` (pública) | Registro paso 2: datos + `codigo`; crea la cuenta con el correo verificado e inicia sesión |
 | `POST /auth/logout` | Revoca el JWT actual (`sesiones_jwt`) |
-| `POST /auth/recuperar` · `POST /auth/restablecer` (públicas) | Enlace por correo (token SHA-256, 30 min) y nueva contraseña |
+| `POST /auth/recuperar` (pública) | Recuperación paso 1: `{ correo, canal: EMAIL \| SMS }` envía un código; responde lo mismo exista o no la cuenta |
+| `POST /auth/recuperar/verificar` (pública) | Paso 2: `{ correo, codigo }` → token temporal de 15 min |
+| `POST /auth/restablecer` (pública) | Paso 3: `{ token, contrasena }`; cierra todas las sesiones |
 | `GET /auth/yo` · `PUT /perfil` · `PUT /perfil/contrasena` · `GET/PUT /perfil/preferencias` | Cuenta propia y consentimiento de canales |
 | `GET /resumen` · `GET /calendario?desde&hasta&materiaId` | Panel por rol y calendario combinado |
 | `GET/POST /tareas` · `GET/PUT/DELETE /tareas/{id}` | Filtros: `q, materiaId, prioridad, estado, pendientes, publicacion, origen, desde, hasta, orden, dir` |
@@ -281,14 +299,15 @@ Formato de error:
 
 ## Pruebas con Bruno
 
-La colección está en [`bruno/`](bruno/). Ábrela en Bruno (*Open Collection*), elige el entorno **Local** o **VPS** y ejecuta las carpetas en orden: `01 Autenticacion` guarda los tokens de cada rol y las demás los envían en el header. Incluye login y token, peticiones protegidas por módulo y la carpeta **`08 Errores a proposito`** (401 sin token, 401 contraseña incorrecta, 403 estudiante en ruta de admin, 403 docente en materia ajena, 404, 400 datos inválidos, 400 rango de fechas, 422 correo repetido, 422 canal sin consentimiento).
+La colección está en [`bruno/`](bruno/). Ábrela en Bruno (*Open Collection*), elige el entorno **Local** o **VPS** y ejecuta las carpetas en orden: `01 Autenticacion` guarda los tokens de cada rol y las demás los envían en el header. Incluye login y token, peticiones protegidas por módulo y la carpeta **`08 Errores a proposito`** (401 sin token, 401 contraseña incorrecta, 403 estudiante en ruta de admin, 403 docente en materia ajena, 404, 400 datos inválidos, 400 rango de fechas, 422 correo repetido, 422 canal sin consentimiento, 429 código pedido dos veces).
 
-Desde la terminal: `cd bruno && npx @usebruno/cli run --env Local` → resultado verificado: **48 peticiones, 71 pruebas aprobadas**.
+Desde la terminal: `cd bruno && npx @usebruno/cli run --env Local` → resultado verificado: **52 peticiones, 79 pruebas aprobadas**.
 
 ## Seguridad
 
 - Contraseñas con **BCrypt (costo 12)**; requisitos (8+, mayúscula, número, especial) validados en el **frontend bajo el input** y en el **backend con Bean Validation** (`@ContrasenaSegura`).
 - **JWT HS256** con `jti`; cada sesión se registra en `sesiones_jwt` (hash SHA-256) y el **logout la revoca**. Cambiar o restablecer la contraseña y desactivar una cuenta cierran sus sesiones.
+- **Códigos de verificación** (registro y recuperación): 6 dígitos aleatorios (`SecureRandom`), guardados como **HMAC-SHA256** con una clave del servidor, de un solo uso, vencen en **10 minutos**, máximo **5 intentos**, **60 s** entre envíos y **5 por hora**. La recuperación responde igual exista o no la cuenta, para no revelar qué correos están registrados.
 - Validaciones de entrada solo con Bean Validation en DTOs (`@Valid`, `@NotBlank`, `@Size`, `@Email`, `@Pattern`, `@Future` y restricciones propias `@RangoValido`, `@DestinoUnico`). Sin validaciones manuales en controladores.
 - La API **nunca expone entidades JPA**: responde DTOs. Relaciones `LAZY` y consultas con `JOIN FETCH` + consultas agregadas por página para evitar **N+1** (`default_batch_fetch_size=50`, `open-in-view=false`).
 - Secretos solo en `application.properties` (ignorado por Git). El repo incluye [`application.properties.example`](backend/src/main/resources/application.properties.example).
@@ -297,11 +316,13 @@ Desde la terminal: `cd bruno && npx @usebruno/cli run --env Local` → resultado
 
 | Canal | Implementación | Acción real que lo dispara |
 |---|---|---|
-| Correo | `JavaMailSender` → **Postfix local** del VPS, firmado con **DKIM**; SPF + DMARC en DNS | Registro (bienvenida), recuperación de contraseña, cambio de contraseña, tarea publicada, evento programado, recordatorios |
-| SMS | Twilio Messages API | Tarea publicada / evento programado (si el estudiante lo autorizó), recordatorios, botón *Enviar ahora* |
+| Correo | `JavaMailSender` → **Postfix local** del VPS, firmado con **DKIM**; SPF + DMARC en DNS | **Código para crear la cuenta**, **código para recuperar la contraseña**, aviso de contraseña cambiada, tarea publicada, evento programado, recordatorios |
+| SMS | Twilio Messages API | **Código para recuperar la contraseña** (al teléfono registrado); tarea publicada / evento programado (si el estudiante lo autorizó), recordatorios, botón *Enviar ahora* |
 | WhatsApp | Twilio WhatsApp (sandbox o número aprobado) | Igual que SMS |
 
-Cada envío queda registrado en `recordatorios` con su estado (`PENDIENTE → ENVIADO | FALLIDO | CANCELADO`), intentos y detalle del error; un despachador `@Scheduled` revisa la cola cada 30 s y reintenta hasta 3 veces los fallos temporales.
+Los códigos se registran en `codigos_verificacion`. En desarrollo, sin correo ni Twilio configurados, `dianova.notificaciones.codigos-en-log=true` escribe el código en el log para poder probar el flujo; en producción va en `false`.
+
+Cada aviso de tarea o evento queda registrado en `recordatorios` con su estado (`PENDIENTE → ENVIADO | FALLIDO | CANCELADO`), intentos y detalle del error; un despachador `@Scheduled` revisa la cola cada 30 s y reintenta hasta 3 veces los fallos temporales.
 
 ## Despliegue en el VPS
 
@@ -325,13 +346,13 @@ bash actualizar.sh              # en despliegues posteriores
 
 ## Respaldo de la base de datos
 
-[`database/dianova_respaldo.sql`](database/dianova_respaldo.sql) fue generado con `mysqldump` desde MySQL 8.0 con los datos de demostración. [`database/consultas_ejemplo.sql`](database/consultas_ejemplo.sql) contiene las 10 consultas de estudio del modelado.
+[`database/dianova_respaldo.sql`](database/dianova_respaldo.sql) fue generado con `mysqldump` desde MySQL 8.0 con los datos de demostración (esquema en la versión `V3` de Flyway). [`database/consultas_ejemplo.sql`](database/consultas_ejemplo.sql) contiene las 10 consultas de estudio del modelado y 3 más sobre los códigos de verificación.
 
 ---
 
 ## Diseño (Figma)
 
-El frontend implementa las pantallas del prototipo: **01 Login, 02 Recuperar contraseña, 03 Resumen, 04 Mis tareas, 05 Calendario, 06 Eventos, 07 Recordatorios, 08 Mis materias** y la tabla de gestión de usuarios.
+El frontend implementa las pantallas del prototipo: **01 Login, 02 Recuperar contraseña (correo o SMS, código y nueva contraseña), 03 Resumen, 04 Mis tareas, 05 Calendario, 06 Eventos, 07 Recordatorios, 08 Mis materias** y la tabla de gestión de usuarios.
 
 ### Paleta y teoría del color
 

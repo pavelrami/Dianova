@@ -32,6 +32,10 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 160)
     private String correo;
 
+    /** Cuándo confirmó el correo con un código. Las cuentas que crea el admin quedan en null. */
+    @Column(name = "correo_verificado_en")
+    private LocalDateTime correoVerificadoEn;
+
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 
@@ -83,6 +87,8 @@ public class Usuario {
     public void setApellidos(String apellidos) { this.apellidos = apellidos; }
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
+    public LocalDateTime getCorreoVerificadoEn() { return correoVerificadoEn; }
+    public void setCorreoVerificadoEn(LocalDateTime correoVerificadoEn) { this.correoVerificadoEn = correoVerificadoEn; }
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public String getTelefono() { return telefono; }

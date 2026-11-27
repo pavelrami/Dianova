@@ -1,0 +1,28 @@
+meta {
+  name: Recuperar por SMS
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/auth/recuperar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "no-existe@dianova.test",
+    "canal": "SMS"
+  }
+}
+
+tests {
+  // Responde igual aunque el correo no exista
+  test("responde 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("menciona el SMS", function() {
+    expect(res.body.mensaje).to.contain("SMS");
+  });
+}

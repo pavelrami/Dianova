@@ -1,0 +1,35 @@
+meta {
+  name: Registro paso 1 - codigo al correo
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/auth/registro/codigo
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "{{correoRegistro}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("correoRegistro", "bruno." + Date.now() + "@dianova.test");
+}
+
+tests {
+  // En local (codigos-en-log=true) el código queda en el log del backend.
+  // Si el servidor no tiene correo configurado responde 503 y no guarda el código.
+  test("responde 200 con el código enviado (o 503 sin servidor de correo)", function() {
+    expect([200, 503]).to.include(res.status);
+  });
+  test("indica vigencia y espera para reenviar", function() {
+    if (res.status === 200) {
+      expect(res.body.minutosVigencia).to.equal(10);
+      expect(res.body.segundosReenvio).to.equal(60);
+    }
+  });
+}

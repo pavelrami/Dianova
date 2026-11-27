@@ -1,0 +1,33 @@
+meta {
+  name: Registro paso 2 - codigo incorrecto (422)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/auth/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Prueba",
+    "apellidos": "Bruno",
+    "correo": "{{correoRegistro}}",
+    "contrasena": "Segura#2026",
+    "telefono": "",
+    "carrera": "Ingeniería",
+    "codigo": "000000"
+  }
+}
+
+tests {
+  // Sin el código correcto la cuenta no se crea
+  test("responde 422", function() {
+    expect(res.status).to.equal(422);
+  });
+  test("el error va en el campo codigo", function() {
+    expect(res.body.errores).to.have.property("codigo");
+  });
+}

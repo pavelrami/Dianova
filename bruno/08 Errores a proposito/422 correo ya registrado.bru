@@ -5,26 +5,24 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/auth/registro
+  url: {{baseUrl}}/auth/registro/codigo
   body: json
   auth: none
 }
 
 body:json {
   {
-    "nombre": "Ana",
-    "apellidos": "Repetida",
-    "correo": "admin@dianova.test",
-    "contrasena": "Segura#2026"
+    "correo": "admin@dianova.test"
   }
 }
 
 tests {
+  // No se manda código a un correo que ya tiene cuenta
   test("responde 422", function() {
     expect(res.status).to.equal(422);
   });
   test("error en formato JSON", function() {
     expect(res.body.estado).to.equal(422);
-    expect(res.body.mensaje).to.be.a("string");
+    expect(res.body.errores).to.have.property("correo");
   });
 }

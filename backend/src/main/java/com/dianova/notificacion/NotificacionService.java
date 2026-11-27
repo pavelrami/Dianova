@@ -32,13 +32,15 @@ public class NotificacionService {
     public static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("EEE d 'de' MMM, HH:mm", Locale.of("es", "MX"));
 
     private final CorreoService correo;
+    private final TwilioService twilio;
     private final PreferenciaRepository preferencias;
     private final RecordatorioRepository recordatorios;
     private final DianovaProperties props;
 
-    public NotificacionService(CorreoService correo, PreferenciaRepository preferencias,
+    public NotificacionService(CorreoService correo, TwilioService twilio, PreferenciaRepository preferencias,
                                RecordatorioRepository recordatorios, DianovaProperties props) {
         this.correo = correo;
+        this.twilio = twilio;
         this.preferencias = preferencias;
         this.recordatorios = recordatorios;
         this.props = props;
@@ -51,9 +53,45 @@ public class NotificacionService {
         enviarCorreoSeguro(para, PlantillasCorreo.bienvenida(nombre, props.frontendUrl()));
     }
 
+    /**
+     * Código para confirmar el correo al registrarse. Es síncrono: si no se entrega, el registro
+     * responde 503 en lugar de dejar al estudiante esperando un correo que nunca llega.
+     */
+    public void codigoRegistro(String para, String codigo, long minutos) {
+        PlantillasCorreo.Correo c = PlantillasCorreo.codigoRegistro(codigo, minutos);
+        try {
+            correo.enviar(para, c.asunto(), c.html(), c.texto());
+        } catch (EnvioException e) {
+            if (!codigoEnLog(para, codigo, e)) throw e;
+        }
+    }
+
+    /** Código de recuperación por correo o SMS. Asíncrono para no revelar, por el tiempo de respuesta, si la cuenta existe. */
     @Async
-    public void recuperacion(String para, String nombre, String enlace, long minutos) {
-        enviarCorreoSeguro(para, PlantillasCorreo.recuperacion(nombre, enlace, minutos));
+    public void codigoRecuperacion(CanalNotificacion canal, String destino, String nombre, String codigo, long minutos) {
+        try {
+            if (canal == CanalNotificacion.SMS) {
+                twilio.enviarSms(destino, "Dianova: tu código para restablecer tu contraseña es " + codigo
+                        + ". Vence en " + minutos + " min. No lo compartas con nadie.");
+            } else {
+                PlantillasCorreo.Correo c = PlantillasCorreo.codigoRecuperacion(nombre, codigo, minutos);
+                correo.enviar(destino, c.asunto(), c.html(), c.texto());
+            }
+        } catch (EnvioException e) {
+            if (!codigoEnLog(destino, codigo, e)) {
+                log.warn("No se envió el código de recuperación por {} a {}: {}", canal, destino, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Solo en desarrollo (dianova.notificaciones.codigos-en-log=true): sin correo ni Twilio configurados,
+     * el código se escribe en el log para poder probar el flujo. En producción debe quedar en false.
+     */
+    private boolean codigoEnLog(String destino, String codigo, EnvioException e) {
+        if (!props.notificaciones().codigosEnLog()) return false;
+        log.warn("[SOLO DESARROLLO] No se envió el código a {} ({}). Código: {}", destino, e.getMessage(), codigo);
+        return true;
     }
 
     @Async

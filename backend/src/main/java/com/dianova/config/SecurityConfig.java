@@ -48,8 +48,8 @@ public class SecurityConfig {
                         .accessDeniedHandler(respuestas.sinPermiso()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registro",
-                                "/api/auth/recuperar", "/api/auth/restablecer").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registro", "/api/auth/registro/codigo",
+                                "/api/auth/recuperar", "/api/auth/recuperar/verificar", "/api/auth/restablecer").permitAll()
                         .requestMatchers("/actuator/health", "/api/salud", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/periodos/**").hasRole("ADMIN")

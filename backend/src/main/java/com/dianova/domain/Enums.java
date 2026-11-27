@@ -32,4 +32,7 @@ public final class Enums {
     public enum CanalNotificacion { EMAIL, SMS, WHATSAPP }
 
     public enum EstadoRecordatorio { PENDIENTE, ENVIADO, FALLIDO, CANCELADO }
+
+    /** Para qué sirve un código de verificación de un solo uso. */
+    public enum PropositoCodigo { REGISTRO, RECUPERACION }
 }

@@ -29,6 +29,8 @@ public record DianovaProperties(
             int minutosReintento,
             /* Correos de estos dominios no se envían (datos de demostración) */
             List<String> dominiosDemo,
+            /* Solo en desarrollo: escribe en el log los códigos que no se pudieron enviar */
+            boolean codigosEnLog,
             Correo correo,
             Twilio twilio) {
     }

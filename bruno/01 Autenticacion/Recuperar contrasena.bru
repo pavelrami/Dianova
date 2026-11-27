@@ -12,12 +12,16 @@ post {
 
 body:json {
   {
-    "correo": "estudiante@dianova.test"
+    "correo": "estudiante@dianova.test",
+    "canal": "EMAIL"
   }
 }
 
 tests {
   test("responde 200", function() {
     expect(res.status).to.equal(200);
+  });
+  test("mensaje generico (no revela si la cuenta existe)", function() {
+    expect(res.body.mensaje).to.contain("código de 6 dígitos");
   });
 }

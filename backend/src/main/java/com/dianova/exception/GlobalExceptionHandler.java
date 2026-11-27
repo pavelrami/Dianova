@@ -29,7 +29,8 @@ import java.util.Map;
 
 /**
  * Traduce cualquier excepción a JSON con el código HTTP correcto:
- * 400 datos inválidos · 401 sin sesión · 403 sin permiso · 404 no existe · 422 regla de negocio · 500 error interno.
+ * 400 datos inválidos · 401 sin sesión · 403 sin permiso · 404 no existe · 422 regla de negocio ·
+ * 429 demasiadas solicitudes · 500 error interno · 503 correo o SMS no disponible.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -99,6 +100,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ReglaNegocioException.class)
     public ResponseEntity<ErrorApi> reglaNegocio(ReglaNegocioException ex, HttpServletRequest req) {
         return responder(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), req, ex.getErrores());
+    }
+
+    @ExceptionHandler(LimiteExcedidoException.class)
+    public ResponseEntity<ErrorApi> limite(LimiteExcedidoException ex, HttpServletRequest req) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(ex.getSegundosEspera()))
+                .body(ErrorApi.de(429, HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(), ex.getMessage(), req.getRequestURI(),
+                        Map.of("segundosEspera", String.valueOf(ex.getSegundosEspera()))));
+    }
+
+    @ExceptionHandler(ServicioNoDisponibleException.class)
+    public ResponseEntity<ErrorApi> noDisponible(ServicioNoDisponibleException ex, HttpServletRequest req) {
+        return responder(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), req, Map.of());
     }
 
     /** Respaldo: una restricción UNIQUE/FK/CHECK de MySQL que se escapó de las validaciones del servicio. */

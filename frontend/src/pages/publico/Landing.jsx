@@ -10,7 +10,7 @@ import {
   BookOpen,
   Mail,
   MessageSquare,
-  MessageCircle,
+  KeyRound,
   ShieldCheck,
   ArrowRight,
   Menu,
@@ -42,7 +42,7 @@ const ROLES = {
       "Crea tareas personales y marca tu avance",
       "Consulta tu calendario y tus eventos",
       "Confirma asistencia a talleres y exámenes",
-      "Recibe recordatorios por correo, SMS o WhatsApp",
+      "Recupera tu cuenta con un código por correo o SMS",
     ],
   },
   docente: {
@@ -108,7 +108,7 @@ export default function Landing() {
           <nav className="hidden items-center gap-7 font-medium md:flex" aria-label="Secciones">
             <a href="#funciones" className="hover:text-canela">Funciones</a>
             <a href="#roles" className="hover:text-canela">Para quién</a>
-            <a href="#avisos" className="hover:text-canela">Recordatorios</a>
+            <a href="#avisos" className="hover:text-canela">Tu cuenta</a>
           </nav>
           <div className="hidden items-center gap-2 md:flex">
             {autenticado ? (
@@ -148,7 +148,7 @@ export default function Landing() {
         {menu && (
           <div className="border-t border-linea bg-crema px-4 pb-5 pt-3 md:hidden">
             <nav className="flex flex-col font-medium" aria-label="Secciones">
-              {[["#funciones", "Funciones"], ["#roles", "Para quién"], ["#avisos", "Recordatorios"]].map(([h, t]) => (
+              {[["#funciones", "Funciones"], ["#roles", "Para quién"], ["#avisos", "Tu cuenta"]].map(([h, t]) => (
                 <a key={h} href={h} onClick={() => setMenu(false)} className="py-3">{t}</a>
               ))}
             </nav>
@@ -328,19 +328,19 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Recordatorios */}
+      {/* Cuenta: verificación y recuperación con código */}
       <section id="avisos" className="scroll-mt-20 border-b border-linea bg-[#efe2ca] py-16 text-tinta md:py-24">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 md:grid-cols-2 md:items-center">
           <div data-revelar>
-            <p className="font-semibold text-canela">Recordatorios que sí llegan</p>
+            <p className="font-semibold text-canela">Tu cuenta, siempre a tu alcance</p>
             <h2 className="mt-1.5 text-lg font-semibold leading-snug tracking-tight sm:text-xl">
-              Por correo, SMS o WhatsApp, solo si tú lo autorizas
+              Un código de 6 dígitos por correo o SMS para entrar y recuperar tu cuenta
             </h2>
             <p className="mt-3 leading-relaxed text-tinta/85">
-              Cuando un docente publica una tarea o programa un evento, te avisamos por los canales que activaste. También puedes programar tus propios recordatorios con la anticipación que prefieras.
+              Al crear tu cuenta confirmas tu correo con un código. Si olvidas tu contraseña, eliges si el código te llega al correo o por SMS a tu teléfono, y en minutos vuelves a tu planificación. Los avisos de tareas y eventos te llegan por correo.
             </p>
             <ul className="mt-5 grid gap-3 sm:grid-cols-3">
-              {[[Mail, "Correo"], [MessageSquare, "SMS"], [MessageCircle, "WhatsApp"]].map(([I, t]) => (
+              {[[Mail, "Correo"], [MessageSquare, "SMS"], [KeyRound, "Código único"]].map(([I, t]) => (
                 <li
                   key={t}
                   className="flex items-center gap-2 rounded-sm border border-linea bg-superficie px-3.5 py-2.5 font-medium text-tinta"
@@ -352,7 +352,7 @@ export default function Landing() {
             </ul>
             <p className="mt-4 flex items-center gap-2 text-tenue">
               <ShieldCheck className="size-4 shrink-0 text-canela" aria-hidden />
-              <span>Contraseñas cifradas y sesiones que puedes cerrar en cualquier momento.</span>
+              <span>Códigos de un solo uso que vencen en 10 minutos, contraseñas cifradas y sesiones que puedes cerrar en cualquier momento.</span>
             </p>
           </div>
           <div
@@ -363,10 +363,10 @@ export default function Landing() {
             <div className="space-y-2.5 rounded-sm border border-linea bg-crema p-4 text-tinta">
               <p className="text-center text-tenue">Hoy</p>
               <div className="max-w-[85%] rounded-sm border border-linea bg-superficie p-3">
-                Dianova: nueva tarea en Física General III: &ldquo;Reporte de laboratorio&rdquo;. Entrega: jue 18:00.
+                Dianova: tu código para restablecer tu contraseña es <b className="font-mono tracking-widest">482913</b>. Vence en 10 min. No lo compartas.
               </div>
               <div className="max-w-[85%] rounded-sm border border-linea bg-superficie p-3">
-                Dianova: &ldquo;Examen parcial&rdquo; empieza mañana a las 16:00 en Aula Magna.
+                Dianova: tu contraseña se actualizó y cerramos tus otras sesiones.
               </div>
               <div className="ml-auto w-fit rounded-sm border border-linea bg-crema-2 px-3 py-1.5 font-medium">
                 ¡Gracias!
@@ -474,9 +474,9 @@ function Planificador() {
         data-flotante
       >
         <p className="flex items-center gap-2 font-semibold">
-          <MessageCircle className="size-4 text-salvia-tinta" /> Recordatorio enviado
+          <Mail className="size-4 text-salvia-tinta" /> Recordatorio enviado
         </p>
-        <p className="text-tenue">WhatsApp · 2 h antes</p>
+        <p className="text-tenue">Correo · 2 h antes</p>
       </div>
       <div
         className="mt-2 rounded-sm border border-linea bg-crema-2 px-4 py-2 font-semibold text-tinta sm:absolute sm:-left-6 sm:-top-4 sm:mt-0"

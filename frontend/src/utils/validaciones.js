@@ -43,6 +43,8 @@ export const iguales = (otro, msg = "Las contraseñas no coinciden") => (v, todo
 export const telefono = () => (v) =>
   !v ? null : /^\+[1-9]\d{7,14}$/.test(String(v).trim()) ? null : "Usa formato internacional, por ejemplo +5215512345678";
 
+export const codigo = () => (v) => (/^\d{6}$/.test((v || "").trim()) ? null : "El código tiene 6 dígitos");
+
 export const url = () => (v) =>
   !v ? null : /^https?:\/\/\S+$/.test(String(v).trim()) ? null : "Escribe una URL que empiece con http:// o https://";
 

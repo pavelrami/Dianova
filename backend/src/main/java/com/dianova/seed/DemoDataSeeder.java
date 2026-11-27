@@ -345,6 +345,7 @@ public class DemoDataSeeder implements CommandLineRunner {
         u.setNombre(nombre);
         u.setApellidos(apellidos);
         u.setCorreo(correo);
+        u.setCorreoVerificadoEn(LocalDateTime.now());
         u.setPasswordHash(hash);
         u.setCarrera(carrera);
         return usuarios.save(u);

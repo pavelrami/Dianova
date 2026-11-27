@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { RutaPrivada, RutaPublica, RutaRol } from "./auth/Rutas";
 import AppLayout from "./components/layout/AppLayout";
 import { PantallaCarga, Spinner } from "./components/ui/Cargando";
@@ -11,7 +11,6 @@ import LimiteError from "./components/ui/LimiteError";
 const Landing = lazy(() => import("./pages/publico/Landing"));
 const Registro = lazy(() => import("./pages/publico/Registro"));
 const Recuperar = lazy(() => import("./pages/publico/Recuperar"));
-const Restablecer = lazy(() => import("./pages/publico/Restablecer"));
 const Resumen = lazy(() => import("./pages/app/Resumen"));
 const Tareas = lazy(() => import("./pages/app/Tareas"));
 const Calendario = lazy(() => import("./pages/app/Calendario"));
@@ -33,7 +32,8 @@ export default function App() {
           <Route path="/registro" element={<Registro />} />
           <Route path="/recuperar" element={<Recuperar />} />
         </Route>
-        <Route path="/restablecer" element={<Restablecer />} />
+        {/* Antes se recuperaba con un enlace; ahora con un código de 6 dígitos */}
+        <Route path="/restablecer" element={<Navigate to="/recuperar" replace />} />
 
         <Route element={<RutaPrivada />}>
           <Route path="/app" element={<AppLayout />}>

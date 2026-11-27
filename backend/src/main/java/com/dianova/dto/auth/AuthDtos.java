@@ -16,6 +16,8 @@ public final class AuthDtos {
 
     public static final String REGEX_TELEFONO = "^$|^\\+[1-9]\\d{7,14}$";
     public static final String MSG_TELEFONO = "Usa formato internacional, por ejemplo +5215512345678";
+    public static final String REGEX_CODIGO = "^[0-9]{6}$";
+    public static final String MSG_CODIGO = "El código tiene 6 dígitos";
 
     public record LoginRequest(
             @NotBlank(message = "El correo es obligatorio")
@@ -42,20 +44,53 @@ public final class AuthDtos {
             @Pattern(regexp = REGEX_TELEFONO, message = MSG_TELEFONO)
             String telefono,
             @Size(max = 120, message = "La carrera no puede superar 120 caracteres")
-            String carrera) {
+            String carrera,
+            /* Código de 6 dígitos que llegó al correo (POST /api/auth/registro/codigo) */
+            @NotBlank(message = "Escribe el código que te enviamos al correo")
+            @Pattern(regexp = REGEX_CODIGO, message = MSG_CODIGO)
+            String codigo) {
+    }
+
+    /** Paso 1 del registro: envía un código al correo para confirmar que es tuyo. */
+    public record CodigoRegistroRequest(
+            @NotBlank(message = "El correo es obligatorio")
+            @Email(message = "Escribe un correo válido")
+            @Size(max = 160, message = "El correo no puede superar 160 caracteres")
+            String correo) {
+    }
+
+    /** Respuesta al enviar un código: cuánto dura y cuánto esperar para pedir otro. */
+    public record CodigoEnviado(String mensaje, long minutosVigencia, long segundosReenvio) {
     }
 
     public record AuthResponse(String token, String tipo, LocalDateTime expiraEn, UsuarioDto usuario) {
     }
 
+    /** Paso 1 de la recuperación: canal EMAIL (por defecto) o SMS al teléfono registrado. */
     public record RecuperarRequest(
             @NotBlank(message = "El correo es obligatorio")
             @Email(message = "Escribe un correo válido")
-            String correo) {
+            String correo,
+            @Pattern(regexp = "^(EMAIL|SMS)?$", message = "Elige correo (EMAIL) o SMS")
+            String canal) {
     }
 
+    /** Paso 2 de la recuperación: valida el código y devuelve un token temporal para el paso 3. */
+    public record VerificarCodigoRequest(
+            @NotBlank(message = "El correo es obligatorio")
+            @Email(message = "Escribe un correo válido")
+            String correo,
+            @NotBlank(message = "Escribe el código que recibiste")
+            @Pattern(regexp = REGEX_CODIGO, message = MSG_CODIGO)
+            String codigo) {
+    }
+
+    public record TokenRestablecer(String token, LocalDateTime expiraEn) {
+    }
+
+    /** Paso 3 de la recuperación: nueva contraseña con el token del paso 2. */
     public record RestablecerRequest(
-            @NotBlank(message = "El enlace de recuperación no es válido")
+            @NotBlank(message = "La verificación expiró. Solicita un código nuevo")
             String token,
             @NotBlank(message = "La contraseña es obligatoria")
             @ContrasenaSegura

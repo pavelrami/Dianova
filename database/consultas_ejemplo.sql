@@ -60,3 +60,23 @@ FROM seguimientos_tarea s JOIN usuarios u ON u.id_usuario = s.id_estudiante
 WHERE s.estado = 'COMPLETADA'
 GROUP BY u.id_usuario, estudiante
 ORDER BY completadas DESC;
+
+-- 11 Códigos de verificación vigentes (sin usar y sin vencer) por propósito y canal
+SELECT proposito, canal, COUNT(*) AS vigentes
+FROM codigos_verificacion
+WHERE usado_en IS NULL AND expira_en > NOW()
+GROUP BY proposito, canal;
+
+-- 12 Solicitudes de recuperación de contraseña en los últimos 7 días, por canal
+SELECT DATE(c.creado_en) AS dia, c.canal, COUNT(*) AS solicitudes,
+       SUM(c.usado_en IS NOT NULL AND c.intentos < 5) AS verificadas
+FROM codigos_verificacion c
+WHERE c.proposito = 'RECUPERACION' AND c.creado_en >= NOW() - INTERVAL 7 DAY
+GROUP BY dia, c.canal
+ORDER BY dia DESC;
+
+-- 13 Cuentas sin correo verificado (las crea el administrador)
+SELECT u.id_usuario, u.correo, r.codigo AS rol, u.creado_en
+FROM usuarios u JOIN roles r ON r.id_rol = u.id_rol
+WHERE u.correo_verificado_en IS NULL
+ORDER BY u.creado_en DESC;

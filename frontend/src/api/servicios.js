@@ -8,10 +8,12 @@ const datos = (promesa) => promesa.then((r) => r.data);
 
 export const authApi = {
   login: (correo, contrasena) => datos(api.post("/auth/login", { correo, contrasena })),
+  registroCodigo: (correo) => datos(api.post("/auth/registro/codigo", { correo })),
   registro: (body) => datos(api.post("/auth/registro", body)),
   logout: () => datos(api.post("/auth/logout")),
   yo: () => datos(api.get("/auth/yo")),
-  recuperar: (correo) => datos(api.post("/auth/recuperar", { correo })),
+  recuperar: (correo, canal = "EMAIL") => datos(api.post("/auth/recuperar", { correo, canal })),
+  verificarCodigo: (correo, codigo) => datos(api.post("/auth/recuperar/verificar", { correo, codigo })),
   restablecer: (token, contrasena) => datos(api.post("/auth/restablecer", { token, contrasena })),
 };
 
